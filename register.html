@@ -258,7 +258,10 @@ async function saveEmployee() {
   showLoading('Saving employee & generating link...');
   if(stream) stream.getTracks().forEach(t=>t.stop());
   try {
-    const res  = await fetch(APPS_SCRIPT_URL, {method:'POST', body:JSON.stringify({action:'register',...empData}), headers:{'Content-Type':'text/plain'}});
+    // Use GET to avoid CORS — send data as URL parameter
+    const payload = encodeURIComponent(JSON.stringify({action:'register',...empData}));
+    const url = APPS_SCRIPT_URL + '?action=register&data=' + payload;
+    const res  = await fetch(url);
     const data = await res.json();
     hideLoading();
     if(data.success) {
