@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Register Employee — Colrina</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{--bg:#0f0f1a;--surface:#1a1a2e;--surface2:#16213e;--accent:#e94560;--green:#00d4aa;--yellow:#ffd060;--text:#f0f0f0;--muted:#888;--radius:16px}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:40px}
+  .header{background:var(--surface);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ffffff10}
+  .logo-text{font-size:18px;font-weight:700;letter-spacing:1px}
+  .logo-sub{font-size:11px;color:var(--muted);letter-spacing:2px}
+  .container{max-width:500px;margin:0 auto;padding:20px 16px}
+  .card{background:var(--surface);border-radius:var(--radius);padding:20px;margin-bottom:14px;border:1px solid #ffffff08}
+  .card-title{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+  .form-group{margin-bottom:14px}
+  label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+  input,select{width:100%;background:var(--bg);border:1px solid #ffffff15;border-radius:10px;padding:13px 14px;color:var(--text);font-size:15px;font-family:'Inter',sans-serif;outline:none;transition:border 0.2s}
+  input:focus,select:focus{border-color:var(--accent)}
+  select option{background:#1a1a2e}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .camera-wrap{position:relative;width:100%;max-width:280px;aspect-ratio:3/4;border-radius:12px;overflow:hidden;background:#000;margin:0 auto}
+  video{width:100%;height:100%;object-fit:cover}
+  .face-oval{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:150px;height:195px;border:2.5px solid var(--green);border-radius:50%;box-shadow:0 0 0 2000px rgba(0,0,0,0.5);pointer-events:none}
+  .preview-img{width:100%;max-width:280px;border-radius:12px;margin:0 auto;display:none}
+  .info-box{padding:10px 14px;border-radius:10px;font-size:13px;margin-top:10px;display:none;align-items:center;gap:8px}
+  .info-ok{background:#00d4aa15;border:1px solid #00d4aa30;color:var(--green)}
+  .info-err{background:#e9456015;border:1px solid #e9456030;color:var(--accent)}
+  .btn{width:100%;padding:14px;border-radius:12px;border:none;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;margin-top:10px}
+  .btn:disabled{opacity:0.35;cursor:not-allowed}
+  .btn-capture{background:var(--surface2);color:var(--text);border:1px solid #ffffff15}
+  .btn-save{background:linear-gradient(135deg,#e94560,#c0392b);color:#fff;font-size:15px}
+  .btn-wa{background:#25D366;color:#fff;font-size:15px;font-weight:700}
+  .btn-copy{background:transparent;border:1px solid #ffffff15;color:var(--muted);font-size:13px}
+  .btn-add{background:var(--accent);color:#fff;font-size:14px;font-weight:700}
+  .link-card{background:#00d4aa10;border:1px solid #00d4aa30;border-radius:14px;padding:20px;margin-top:14px;display:none}
+  .link-title{font-size:16px;font-weight:700;color:var(--green);margin-bottom:4px}
+  .link-sub{font-size:12px;color:var(--muted);margin-bottom:14px}
+  .link-box{background:var(--bg);border-radius:10px;padding:12px 14px;font-size:11px;color:var(--muted);word-break:break-all;margin-bottom:12px;border:1px solid #ffffff10;line-height:1.6}
+  .loading-overlay{display:none;position:fixed;inset:0;background:rgba(15,15,26,0.92);z-index:100;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+  .loading-overlay.show{display:flex}
+  .spinner{width:48px;height:48px;border:3px solid #ffffff15;border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading-text{color:var(--muted);font-size:14px}
+</style>
+</head>
+<body>
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loadingText">Please wait...</div>
+</div>
+<div class="header">
+  <div><div class="logo-text">COLRINA</div><div class="logo-sub">Add Employee</div></div>
+  <a href="dashboard.html" style="color:var(--muted);text-decoration:none;font-size:13px">Dashboard →</a>
+</div>
+<div class="container">
+  <div style="font-size:22px;font-weight:700;margin-bottom:4px">Register New Employee</div>
+  <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Fill details + capture face. Saves to Employee Master sheet.</div>
+
+  <div class="card" id="formCard">
+    <div class="card-title">Employee Details</div>
+    <div class="row">
+      <div class="form-group"><label>Emp Code *</label><input type="text" id="empId" placeholder="e.g. COL001" oninput="checkReady()"></div>
+      <div class="form-group"><label>Phone</label><input type="tel" id="phone" placeholder="10 digits"></div>
+    </div>
+    <div class="form-group"><label>Full Name *</label><input type="text" id="name" placeholder="Employee full name" oninput="checkReady()"></div>
+    <div class="row">
+      <div class="form-group">
+        <label>Department *</label>
+        <select id="department" onchange="loadRoles();checkReady()">
+          <option value="">Select...</option>
+          <option>Cutting</option><option>Stitching</option><option>Finishing</option>
+          <option>Packing</option><option>Accounts</option><option>HR</option>
+          <option>Admin</option><option>Management</option><option>Quality</option><option>Dispatch</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Designation *</label>
+        <select id="designation" onchange="checkReady()"><option value="">Select Dept first</option></select>
+      </div>
+    </div>
+    <div class="row">
+      <div class="form-group">
+        <label>Employee Type *</label>
+        <select id="empType" onchange="checkReady()">
+          <option value="">Select...</option>
+          <option value="Office">🏢 Office Staff</option>
+          <option value="Worker">👷 Factory Worker</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="status"><option value="Active">Active</option><option value="Inactive">Inactive</option></select>
+      </div>
+    </div>
+    <div class="row">
+      <div class="form-group"><label>Shift Start</label><input type="time" id="shiftStart" value="09:00"></div>
+      <div class="form-group"><label>Shift End</label><input type="time" id="shiftEnd" value="18:00"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📸 Face Capture</div>
+    <div class="camera-wrap" id="cameraWrap">
+      <video id="video" autoplay playsinline muted></video>
+      <div class="face-oval"></div>
+    </div>
+    <img id="previewImg" class="preview-img">
+    <div class="info-box info-ok" id="faceOk"><span>✅</span><span id="faceOkText">Face captured successfully</span></div>
+    <div class="info-box info-err" id="faceErr"><span>❌</span><span id="faceErrText">No face detected — retake</span></div>
+    <button class="btn btn-capture" id="btnCapture" onclick="handleCapture()">📸 Capture Face</button>
+  </div>
+
+  <button class="btn btn-save" id="btnSave" onclick="saveEmployee()" disabled>💾 Save Employee & Generate Link</button>
+
+  <div class="link-card" id="linkCard">
+    <div class="link-title">✅ Employee Registered!</div>
+    <div class="link-sub" id="linkSub">Personal attendance link generated</div>
+    <div class="link-box" id="linkBox">-</div>
+    <button class="btn btn-wa" onclick="shareWhatsApp()">📲 Send on WhatsApp</button>
+    <button class="btn btn-copy" onclick="copyLink()">📋 Copy Link</button>
+    <button class="btn btn-add" onclick="location.reload()">➕ Add Another Employee</button>
+  </div>
+</div>
+
+<script>
+// ── Config ────────────────────────────────────────────────────
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwk4R4cmf8quXYcd-f8fMJ-BNZAzax_9erfqNfoLlHIWVomFieup2L6aIFrgTXeVeUbbQ/exec";
+const GITHUB_PAGES_URL = "https://colrina2025.github.io/colrina-attendance";
+
+const ROLES = {
+  'Cutting':['Cutting Master','Cutter','Helper'],
+  'Stitching':['Supervisor','Tailor','Helper'],
+  'Finishing':['Finishing Supervisor','Finishing Worker','Helper'],
+  'Packing':['Packing Supervisor','Packing Worker','Helper'],
+  'Accounts':['Accountant','Accounts Assistant'],
+  'HR':['HR Manager','HR Executive','HR Assistant'],
+  'Admin':['Admin Manager','Admin Executive','Office Boy'],
+  'Management':['Director','Manager','Assistant Manager'],
+  'Quality':['QC Manager','QC Inspector'],
+  'Dispatch':['Dispatch Manager','Dispatch Executive','Helper']
+};
+
+let capturedPhoto=null, faceDescriptor=null, faceApiLoaded=false, stream=null;
+let _link='', _empName='', _empPhone='';
+
+function loadRoles() {
+  const dept=document.getElementById('department').value;
+  const sel=document.getElementById('designation');
+  sel.innerHTML='<option value="">Select...</option>';
+  if(dept&&ROLES[dept]) ROLES[dept].forEach(r=>{const o=document.createElement('option');o.value=r;o.textContent=r;sel.appendChild(o);});
+}
+
+async function startCamera() {
+  try {
+    if(stream) stream.getTracks().forEach(t=>t.stop());
+    stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:480,height:640}});
+    document.getElementById('video').srcObject = stream;
+  } catch(e) { alert('Camera access denied. Please allow camera and refresh.'); }
+}
+startCamera();
+
+function loadFaceApi() {
+  if(faceApiLoaded) return;
+  const s=document.createElement('script');
+  s.src='https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js';
+  s.onload=async function(){
+    await Promise.all([
+      faceapi.nets.tinyFaceDetector.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights'),
+      faceapi.nets.faceLandmark68Net.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights'),
+      faceapi.nets.faceRecognitionNet.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights'),
+    ]);
+    faceApiLoaded=true;
+  };
+  document.head.appendChild(s);
+}
+loadFaceApi();
+
+function handleCapture() {
+  if(capturedPhoto) { retake(); return; }
+  capturePhoto();
+}
+
+async function capturePhoto() {
+  const video=document.getElementById('video');
+  const canvas=document.createElement('canvas');
+  canvas.width=video.videoWidth||480; canvas.height=video.videoHeight||640;
+  canvas.getContext('2d').drawImage(video,0,0);
+  capturedPhoto=canvas.toDataURL('image/jpeg',0.85);
+  document.getElementById('previewImg').src=capturedPhoto;
+  document.getElementById('previewImg').style.display='block';
+  document.getElementById('cameraWrap').style.display='none';
+  document.getElementById('btnCapture').textContent='🔄 Retake';
+  document.getElementById('faceOk').style.display='none';
+  document.getElementById('faceErr').style.display='none';
+  if(faceApiLoaded) await extractFace(canvas);
+  else {
+    showLoading('Loading face model...');
+    let t=0; const iv=setInterval(async()=>{t++;
+      if(faceApiLoaded){clearInterval(iv);hideLoading();await extractFace(canvas);}
+      else if(t>20){clearInterval(iv);hideLoading();checkReady();}
+    },1000);
+  }
+}
+
+async function extractFace(canvas) {
+  showLoading('Extracting face data...');
+  try {
+    const det=await faceapi.detectSingleFace(canvas,new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
+    hideLoading();
+    if(det) {
+      faceDescriptor=Array.from(det.descriptor);
+      document.getElementById('faceOk').style.display='flex';
+    } else {
+      faceDescriptor=null;
+      document.getElementById('faceErr').style.display='flex';
+    }
+  } catch(e) { hideLoading(); faceDescriptor=null; }
+  checkReady();
+}
+
+function retake() {
+  capturedPhoto=null; faceDescriptor=null;
+  document.getElementById('previewImg').style.display='none';
+  document.getElementById('cameraWrap').style.display='block';
+  document.getElementById('faceOk').style.display='none';
+  document.getElementById('faceErr').style.display='none';
+  document.getElementById('btnCapture').textContent='📸 Capture Face';
+  startCamera(); checkReady();
+}
+
+function checkReady() {
+  const id=document.getElementById('empId').value.trim();
+  const name=document.getElementById('name').value.trim();
+  const dept=document.getElementById('department').value;
+  const desig=document.getElementById('designation').value;
+  const type=document.getElementById('empType').value;
+  document.getElementById('btnSave').disabled=!(id&&name&&dept&&desig&&type&&capturedPhoto);
+}
+
+async function saveEmployee() {
+  const empData={
+    empId:document.getElementById('empId').value.trim(),
+    name:document.getElementById('name').value.trim(),
+    department:document.getElementById('department').value,
+    designation:document.getElementById('designation').value,
+    phone:document.getElementById('phone').value.trim(),
+    type:document.getElementById('empType').value,
+    shiftStart:document.getElementById('shiftStart').value,
+    shiftEnd:document.getElementById('shiftEnd').value,
+    status:document.getElementById('status').value,
+    photoBase64:capturedPhoto,
+    faceDescriptor:faceDescriptor,
+    githubPagesUrl: GITHUB_PAGES_URL
+  };
+  showLoading('Saving employee & generating link...');
+  if(stream) stream.getTracks().forEach(t=>t.stop());
+  try {
+    const res  = await fetch(APPS_SCRIPT_URL, {method:'POST', body:JSON.stringify({action:'register',...empData}), headers:{'Content-Type':'text/plain'}});
+    const data = await res.json();
+    hideLoading();
+    if(data.success) {
+      _link=data.personalLink; _empName=data.name; _empPhone=data.phone;
+      document.getElementById('formCard').style.display='none';
+      document.getElementById('btnSave').style.display='none';
+      document.getElementById('linkCard').style.display='block';
+      document.getElementById('linkSub').textContent=data.name+' ('+data.empId+') — share this link';
+      document.getElementById('linkBox').textContent=data.personalLink;
+    } else { alert('❌ '+data.message); }
+  } catch(e) { hideLoading(); alert('❌ Error: '+e.message); }
+}
+
+function shareWhatsApp() {
+  const msg=encodeURIComponent('Hi '+_empName+',\n\nYour Colrina Attendance link:\n'+_link+'\n\nOpen this link daily to mark attendance.\n\n— Colrina HR');
+  const phone=_empPhone?(_empPhone.length===10?'91'+_empPhone:_empPhone):'';
+  window.open(phone?'https://wa.me/'+phone+'?text='+msg:'https://wa.me/?text='+msg,'_blank');
+}
+
+function copyLink() {
+  navigator.clipboard.writeText(_link).then(()=>{
+    const b=document.querySelector('.btn-copy'); b.textContent='✅ Copied!';
+    setTimeout(()=>b.textContent='📋 Copy Link',2000);
+  });
+}
+
+function showLoading(t){document.getElementById('loadingText').textContent=t;document.getElementById('loadingOverlay').classList.add('show')}
+function hideLoading(){document.getElementById('loadingOverlay').classList.remove('show')}
+</script>
+</body>
+</html>

@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Colrina Attendance</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{--bg:#0f0f1a;--surface:#1a1a2e;--surface2:#16213e;--accent:#e94560;--green:#00d4aa;--yellow:#ffd060;--text:#f0f0f0;--muted:#888;--radius:16px}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:40px}
+  .header{width:100%;background:var(--surface);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ffffff10}
+  .logo-dot{width:10px;height:10px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite;flex-shrink:0}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+  .logo{display:flex;align-items:center;gap:10px}
+  .logo-text{font-size:18px;font-weight:700;letter-spacing:1px}
+  .logo-sub{font-size:11px;color:var(--muted);letter-spacing:2px}
+  .time-display .time{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;text-align:right}
+  .time-display .date{font-size:11px;color:var(--muted);text-align:right}
+  .container{width:100%;max-width:480px;padding:20px 16px}
+  .card{background:var(--surface);border-radius:var(--radius);padding:22px;margin-bottom:14px;border:1px solid #ffffff08}
+  .card-title{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px}
+  .emp-card{width:100%;max-width:480px;margin:16px 16px 0;background:var(--surface2);border-radius:14px;padding:16px;display:none;align-items:center;gap:14px;border:1px solid #ffffff10}
+  .emp-avatar{width:52px;height:52px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;flex-shrink:0;overflow:hidden}
+  .emp-avatar img{width:100%;height:100%;object-fit:cover}
+  .emp-name-text{font-size:16px;font-weight:600}
+  .emp-meta-text{font-size:12px;color:var(--muted);margin-top:3px}
+  .emp-type-badge{margin-left:auto;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600}
+  .type-office{background:#00d4aa20;color:var(--green)}
+  .type-worker{background:#ffd06020;color:var(--yellow)}
+  .camera-wrap{position:relative;width:100%;aspect-ratio:4/3;border-radius:12px;overflow:hidden;background:#000}
+  video{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover}
+  .face-guide{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:180px;height:220px;border:2px solid var(--green);border-radius:50%;box-shadow:0 0 0 2000px rgba(0,0,0,0.45);pointer-events:none}
+  .camera-label{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-size:12px;color:#fff;background:rgba(0,0,0,0.6);padding:4px 12px;border-radius:20px;white-space:nowrap}
+  .preview-wrap{display:none;margin-bottom:10px}
+  .preview-wrap img{width:100%;border-radius:10px}
+  .preview-label{font-size:12px;color:var(--green);text-align:center;margin-top:6px}
+  .gps-status{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:10px;font-size:13px;margin-top:12px}
+  .gps-ok{background:#00d4aa15;color:var(--green);border:1px solid #00d4aa30}
+  .gps-fail{background:#e9456015;color:var(--accent);border:1px solid #e9456030}
+  .gps-loading{background:#ffd06015;color:var(--yellow);border:1px solid #ffd06030}
+  .gps-dot{width:8px;height:8px;border-radius:50%;background:currentColor;flex-shrink:0}
+  .btn{width:100%;padding:15px;border-radius:12px;border:none;font-family:'Inter',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s;letter-spacing:0.5px}
+  .btn:disabled{opacity:0.4;cursor:not-allowed}
+  .btn:active{transform:scale(0.98)}
+  .btn-capture{background:var(--surface2);color:var(--text);border:1px solid #ffffff15;margin-bottom:10px}
+  .btn-capture:hover:not(:disabled){border-color:var(--green);color:var(--green)}
+  .btn-punch{background:linear-gradient(135deg,#00d4aa,#00a884);color:#000;font-size:16px}
+  .btn-punch-out{background:linear-gradient(135deg,#e94560,#c0392b);color:#fff}
+  .btn-reset{background:var(--surface2);color:var(--text);border:1px solid #ffffff15;margin-top:20px}
+  .result-card{text-align:center;padding:32px 24px}
+  .result-icon{font-size:64px;margin-bottom:14px}
+  .result-title{font-size:20px;font-weight:700;margin-bottom:6px}
+  .result-time{font-size:38px;font-weight:300;color:var(--green);margin:12px 0;font-variant-numeric:tabular-nums}
+  .result-meta{font-size:13px;color:var(--muted)}
+  .result-location{margin-top:12px;font-size:12px;padding:6px 14px;border-radius:20px;display:inline-block}
+  .loc-ok{background:#00d4aa15;color:var(--green)}
+  .loc-warn{background:#ffd06015;color:var(--yellow)}
+  .late-badge{display:inline-block;background:#e9456020;color:var(--accent);padding:3px 10px;border-radius:20px;font-size:11px;margin-top:8px}
+  .invalid-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:70vh;text-align:center;padding:20px}
+  .loading-overlay{display:none;position:fixed;inset:0;background:rgba(15,15,26,0.92);z-index:100;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+  .loading-overlay.show{display:flex}
+  .spinner{width:48px;height:48px;border:3px solid #ffffff15;border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading-text{color:var(--muted);font-size:14px}
+  .steps{display:flex;gap:8px;margin-bottom:20px}
+  .step{flex:1;height:3px;border-radius:2px;background:#ffffff15;transition:background 0.4s}
+  .step.active{background:var(--accent)}
+  .step.done{background:var(--green)}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loadingText">Verifying your link...</div>
+</div>
+
+<div class="header">
+  <div class="logo">
+    <div class="logo-dot"></div>
+    <div>
+      <div class="logo-text">COLRINA</div>
+      <div class="logo-sub">Attendance</div>
+    </div>
+  </div>
+  <div class="time-display">
+    <div class="time" id="clock">--:--</div>
+    <div class="date" id="dateDisplay">--</div>
+  </div>
+</div>
+
+<div class="emp-card" id="empCard">
+  <div class="emp-avatar" id="empAvatar"></div>
+  <div>
+    <div class="emp-name-text" id="empNameText">-</div>
+    <div class="emp-meta-text" id="empMetaText">-</div>
+  </div>
+  <span class="emp-type-badge" id="empTypeBadge"></span>
+</div>
+
+<div class="invalid-wrap" id="invalidWrap" style="display:none">
+  <div style="font-size:56px">🔗</div>
+  <div style="font-size:20px;font-weight:700;margin-top:16px">Invalid Link</div>
+  <div style="font-size:13px;color:var(--muted);margin-top:8px">Please use your personal attendance link sent by HR.</div>
+</div>
+
+<div class="container" id="mainContent" style="display:none">
+  <div class="steps">
+    <div class="step active" id="step1"></div>
+    <div class="step" id="step2"></div>
+  </div>
+
+  <div id="sectionCamera">
+    <div class="card">
+      <div class="card-title">Face Verification</div>
+      <div class="camera-wrap" id="cameraWrap">
+        <video id="video" autoplay playsinline muted></video>
+        <div class="face-guide"></div>
+        <div class="camera-label" id="cameraLabel">Look straight at camera</div>
+      </div>
+      <div class="preview-wrap" id="previewWrap">
+        <img id="previewImg" src="">
+        <div class="preview-label">✅ Photo captured</div>
+      </div>
+      <div class="gps-status gps-loading" id="gpsStatus">
+        <div class="gps-dot"></div>
+        <span id="gpsText">Getting your location...</span>
+      </div>
+      <br>
+      <button class="btn btn-capture" id="btnCapture" onclick="capturePhoto()">📸 Capture Photo</button>
+    </div>
+    <button class="btn btn-punch" id="btnPunch" disabled onclick="submitPunch()">✅ Mark Attendance</button>
+  </div>
+
+  <div id="sectionResult" style="display:none">
+    <div class="card result-card">
+      <div class="result-icon" id="resultIcon">✅</div>
+      <div class="result-title" id="resultTitle">-</div>
+      <div class="result-time" id="resultTime">-</div>
+      <div class="result-meta" id="resultMeta">-</div>
+      <div class="result-location" id="resultLocation">-</div>
+      <div id="lateBadge" style="display:none"><span class="late-badge">⚠️ Marked Late</span></div>
+      <button class="btn btn-reset" onclick="resetPunch()">Mark Another Punch</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Config — Apps Script URL ──────────────────────────────────
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwk4R4cmf8quXYcd-f8fMJ-BNZAzax_9erfqNfoLlHIWVomFieup2L6aIFrgTXeVeUbbQ/exec";
+
+// ── Get URL params ────────────────────────────────────────────
+const params  = new URLSearchParams(window.location.search);
+const EMP_ID  = params.get('emp')   || '';
+const TOKEN   = params.get('token') || '';
+
+// ── State ─────────────────────────────────────────────────────
+let empData       = null;
+let allDescriptors= [];
+let capturedPhoto = null;
+let gpsData       = { lat:null, lng:null, ok:false };
+let stream        = null;
+let faceApiLoaded = false;
+
+// ── Clock ─────────────────────────────────────────────────────
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent       = now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('dateDisplay').textContent = now.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
+}
+setInterval(updateClock,1000); updateClock();
+
+// ── Call Apps Script ──────────────────────────────────────────
+function callScript(action, data) {
+  return new Promise((resolve, reject) => {
+    const params = new URLSearchParams({ action, ...data });
+    fetch(APPS_SCRIPT_URL + '?action=' + action + '&data=' + encodeURIComponent(JSON.stringify(data)))
+      .then(r => r.json())
+      .then(resolve)
+      .catch(reject);
+  });
+}
+
+// ── Boot ──────────────────────────────────────────────────────
+window.onload = async function() {
+  if (!EMP_ID || !TOKEN) {
+    document.getElementById('invalidWrap').style.display = 'flex';
+    return;
+  }
+  showLoading('Verifying your link...');
+  try {
+    const url = APPS_SCRIPT_URL + '?action=validate&empId=' + encodeURIComponent(EMP_ID) + '&token=' + encodeURIComponent(TOKEN);
+    const res = await fetch(url);
+    const emp = await res.json();
+    hideLoading();
+    if (!emp.valid) { document.getElementById('invalidWrap').style.display='flex'; return; }
+    empData = emp;
+    showEmpCard();
+    document.getElementById('mainContent').style.display = 'block';
+    startCamera();
+    getGPS();
+    loadFaceApi();
+  } catch(e) {
+    hideLoading();
+    document.getElementById('invalidWrap').style.display = 'flex';
+  }
+};
+
+function showEmpCard() {
+  document.getElementById('empCard').style.display = 'flex';
+  const av = document.getElementById('empAvatar');
+  if (empData.photoUrl) av.innerHTML = '<img src="'+empData.photoUrl+'" onerror="this.parentElement.textContent=\''+empData.name[0]+'\'">';
+  else av.textContent = empData.name[0];
+  document.getElementById('empNameText').textContent = empData.name;
+  document.getElementById('empMetaText').textContent = empData.empId+' · '+empData.department+' · '+empData.shiftStart+'–'+empData.shiftEnd;
+  const b = document.getElementById('empTypeBadge');
+  b.textContent = empData.type;
+  b.className   = 'emp-type-badge '+(empData.type==='Office'?'type-office':'type-worker');
+}
+
+// ── Camera ────────────────────────────────────────────────────
+async function startCamera() {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:640,height:480}});
+    document.getElementById('video').srcObject = stream;
+  } catch(e) {
+    document.getElementById('cameraLabel').textContent = '⚠️ Allow camera in browser settings';
+  }
+}
+
+// ── GPS ───────────────────────────────────────────────────────
+function getGPS() {
+  if (!navigator.geolocation) { setGPS(false,'GPS not supported'); return; }
+  navigator.geolocation.getCurrentPosition(
+    p => { gpsData={lat:p.coords.latitude,lng:p.coords.longitude,ok:true}; setGPS(true,'Location captured (±'+Math.round(p.coords.accuracy)+'m)'); checkReady(); },
+    () => { setGPS(false,'Allow location access and retry'); },
+    {enableHighAccuracy:true,timeout:10000}
+  );
+}
+function setGPS(ok,text) {
+  document.getElementById('gpsStatus').className = 'gps-status '+(ok?'gps-ok':'gps-fail');
+  document.getElementById('gpsText').textContent = (ok?'📍 ':'❌ ')+text;
+}
+
+// ── Face API ──────────────────────────────────────────────────
+function loadFaceApi() {
+  const s = document.createElement('script');
+  s.src   = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js';
+  s.onload = async function() {
+    await Promise.all([
+      faceapi.nets.tinyFaceDetector.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights'),
+      faceapi.nets.faceLandmark68Net.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights'),
+      faceapi.nets.faceRecognitionNet.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights'),
+    ]);
+    faceApiLoaded = true;
+    // Load all face descriptors
+    try {
+      const url = APPS_SCRIPT_URL + '?action=descriptors';
+      const res = await fetch(url);
+      allDescriptors = await res.json();
+    } catch(e) {}
+  };
+  document.head.appendChild(s);
+}
+
+// ── Capture ───────────────────────────────────────────────────
+async function capturePhoto() {
+  const video  = document.getElementById('video');
+  const canvas = document.createElement('canvas');
+  canvas.width  = video.videoWidth  || 640;
+  canvas.height = video.videoHeight || 480;
+  canvas.getContext('2d').drawImage(video,0,0);
+  capturedPhoto = canvas.toDataURL('image/jpeg',0.75);
+  document.getElementById('previewImg').src           = capturedPhoto;
+  document.getElementById('previewWrap').style.display= 'block';
+  document.getElementById('cameraWrap').style.display = 'none';
+  document.getElementById('btnCapture').textContent   = '🔄 Retake';
+
+  if (faceApiLoaded) await matchFace(canvas);
+  else {
+    showLoading('Face model loading...');
+    let t=0; const iv=setInterval(async()=>{t++;
+      if(faceApiLoaded){clearInterval(iv);hideLoading();await matchFace(canvas);}
+      else if(t>20){clearInterval(iv);hideLoading();alert('Face model failed. Check internet.');resetCamera();}
+    },1000);
+  }
+}
+
+async function matchFace(canvas) {
+  showLoading('Verifying face...');
+  try {
+    const det = await faceapi.detectSingleFace(canvas,new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
+    hideLoading();
+    if (!det) { alert('❌ No face detected. Retake in good lighting.'); resetCamera(); return; }
+    let best=null, bestD=1;
+    for (const fd of allDescriptors) {
+      const d = faceapi.euclideanDistance(det.descriptor, new Float32Array(fd.faceDescriptor));
+      if (d<bestD) { bestD=d; best=fd; }
+    }
+    const pct = Math.round((1-bestD)*100);
+    if (best && best.empId===empData.empId && pct>=60) {
+      empData._faceMatch = pct+'%';
+      document.getElementById('cameraLabel').textContent = '✅ Face matched — '+pct+'%';
+      checkReady();
+    } else if (best && best.empId!==empData.empId) {
+      alert('❌ Face does not match this account. Use your own link.');
+      resetCamera();
+    } else {
+      alert('❌ Face not recognised ('+pct+'%). Try in better lighting.');
+      resetCamera();
+    }
+  } catch(e) { hideLoading(); alert('❌ Face error. Retake photo.'); resetCamera(); }
+}
+
+function resetCamera() {
+  capturedPhoto=null; if(empData) empData._faceMatch=null;
+  document.getElementById('previewWrap').style.display='none';
+  document.getElementById('cameraWrap').style.display='block';
+  document.getElementById('btnCapture').textContent='📸 Capture Photo';
+  checkReady();
+}
+
+function checkReady() {
+  document.getElementById('btnPunch').disabled = !(capturedPhoto && gpsData.ok && empData && empData._faceMatch);
+}
+
+// ── Submit Punch ──────────────────────────────────────────────
+async function submitPunch() {
+  showLoading('Recording attendance...');
+  try {
+    const url = APPS_SCRIPT_URL + '?action=punch&empId='+encodeURIComponent(empData.empId)+'&token='+encodeURIComponent(TOKEN)+'&lat='+gpsData.lat+'&lng='+gpsData.lng+'&faceMatch='+encodeURIComponent(empData._faceMatch)+'&device='+encodeURIComponent(navigator.userAgent.substring(0,50));
+    // Send photo separately via POST
+    const formData = new FormData();
+    formData.append('action','punch');
+    formData.append('empId', empData.empId);
+    formData.append('token', TOKEN);
+    formData.append('lat',   gpsData.lat);
+    formData.append('lng',   gpsData.lng);
+    formData.append('faceMatch', empData._faceMatch);
+    formData.append('photo', capturedPhoto);
+    const res  = await fetch(APPS_SCRIPT_URL, { method:'POST', body: formData });
+    const data = await res.json();
+    hideLoading();
+    if (data.success) showResult(data);
+    else alert('❌ '+data.message);
+  } catch(e) { hideLoading(); alert('Error: '+e.message); }
+}
+
+function showResult(res) {
+  if(stream) stream.getTracks().forEach(t=>t.stop());
+  document.getElementById('sectionCamera').style.display='none';
+  document.getElementById('sectionResult').style.display='block';
+  document.getElementById('step1').className='step done';
+  document.getElementById('step2').className='step active';
+  const isIn = res.punchType==='IN';
+  document.getElementById('resultIcon').textContent  = isIn?'✅':'👋';
+  document.getElementById('resultTitle').textContent = 'Punch '+res.punchType+' — '+res.empName;
+  document.getElementById('resultTime').textContent  = res.time;
+  document.getElementById('resultMeta').textContent  = empData.department+' · Face: '+empData._faceMatch;
+  const locEl = document.getElementById('resultLocation');
+  locEl.textContent = '📍 '+res.locationStatus;
+  locEl.className   = 'result-location '+(res.locationStatus.includes('Outside')?'loc-warn':'loc-ok');
+  document.getElementById('lateBadge').style.display = res.lateNote?'block':'none';
+}
+
+function resetPunch() {
+  capturedPhoto=null; if(empData) empData._faceMatch=null;
+  document.getElementById('sectionCamera').style.display='block';
+  document.getElementById('sectionResult').style.display='none';
+  document.getElementById('step1').className='step active';
+  document.getElementById('step2').className='step';
+  document.getElementById('previewWrap').style.display='none';
+  document.getElementById('cameraWrap').style.display='block';
+  document.getElementById('btnCapture').textContent='📸 Capture Photo';
+  document.getElementById('btnPunch').disabled=true;
+  startCamera(); getGPS();
+}
+
+function showLoading(t){document.getElementById('loadingText').textContent=t;document.getElementById('loadingOverlay').classList.add('show')}
+function hideLoading(){document.getElementById('loadingOverlay').classList.remove('show')}
+</script>
+</body>
+</html>
