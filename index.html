@@ -331,15 +331,18 @@ async function submitPunch() {
   try {
     const url = APPS_SCRIPT_URL + '?action=punch&empId='+encodeURIComponent(empData.empId)+'&token='+encodeURIComponent(TOKEN)+'&lat='+gpsData.lat+'&lng='+gpsData.lng+'&faceMatch='+encodeURIComponent(empData._faceMatch)+'&device='+encodeURIComponent(navigator.userAgent.substring(0,50));
     // Send photo separately via POST
-    const formData = new FormData();
-    formData.append('action','punch');
-    formData.append('empId', empData.empId);
-    formData.append('token', TOKEN);
-    formData.append('lat',   gpsData.lat);
-    formData.append('lng',   gpsData.lng);
-    formData.append('faceMatch', empData._faceMatch);
-    formData.append('photo', capturedPhoto);
-    const res  = await fetch(APPS_SCRIPT_URL, { method:'POST', body: formData });
+    // Use GET to avoid CORS
+    const punchData = {
+      action: 'punch',
+      empId:  empData.empId,
+      token:  TOKEN,
+      lat:    gpsData.lat,
+      lng:    gpsData.lng,
+      faceMatch: empData._faceMatch,
+      photoBase64: capturedPhoto
+    };
+    const payload = encodeURIComponent(JSON.stringify(punchData));
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=punch&data=' + payload);
     const data = await res.json();
     hideLoading();
     if (data.success) showResult(data);
