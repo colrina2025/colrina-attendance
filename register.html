@@ -162,19 +162,35 @@ async function startCamera() {
 }
 startCamera();
 
-function loadFaceApi() {
-  if(faceApiLoaded) return;
-  const s=document.createElement('script');
-  s.src='https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js';
-  s.onload=async function(){
-    await Promise.all([
-      faceapi.nets.tinyFaceDetector.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights'),
-      faceapi.nets.faceLandmark68Net.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights'),
-      faceapi.nets.faceRecognitionNet.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights'),
-    ]);
-    faceApiLoaded=true;
-  };
-  document.head.appendChild(s);
+const WEIGHTS_URL = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights';
+
+async function loadFaceApi() {
+  if (faceApiLoaded) return;
+  try {
+    if (!window.faceapi) {
+      await new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js';
+        s.onload = resolve; s.onerror = reject;
+        document.head.appendChild(s);
+      });
+    }
+    let attempts = 0;
+    while (attempts < 3) {
+      try {
+        await Promise.all([
+          faceapi.nets.tinyFaceDetector.loadFromUri(WEIGHTS_URL),
+          faceapi.nets.faceLandmark68Net.loadFromUri(WEIGHTS_URL),
+          faceapi.nets.faceRecognitionNet.loadFromUri(WEIGHTS_URL),
+        ]);
+        faceApiLoaded = true;
+        break;
+      } catch(e) {
+        attempts++;
+        if (attempts < 3) await new Promise(r => setTimeout(r, 2000));
+      }
+    }
+  } catch(e) { console.log('Face API load error:', e); }
 }
 loadFaceApi();
 
