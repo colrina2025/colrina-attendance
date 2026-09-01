@@ -244,24 +244,58 @@ function setGPS(ok,text) {
 }
 
 // ── Face API ──────────────────────────────────────────────────
-function loadFaceApi() {
-  const s = document.createElement('script');
-  s.src   = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js';
-  s.onload = async function() {
-    await Promise.all([
-      faceapi.nets.tinyFaceDetector.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights'),
-      faceapi.nets.faceLandmark68Net.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights'),
-      faceapi.nets.faceRecognitionNet.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights'),
-    ]);
-    faceApiLoaded = true;
-    // Load all face descriptors
+const WEIGHTS_URL = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights';
+const FACEAPI_URL = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js';
+
+// Register service worker for caching
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
+
+async function loadFaceApi() {
+  // Show loading status to user
+  document.getElementById('cameraLabel').textContent = '⏳ Loading face model (first time only)...';
+  
+  // Load face-api.js script
+  await new Promise((resolve, reject) => {
+    if (window.faceapi) { resolve(); return; }
+    const s   = document.createElement('script');
+    s.src     = FACEAPI_URL;
+    s.onload  = resolve;
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+
+  // Load models with retry
+  let attempts = 0;
+  while (attempts < 3) {
     try {
-      const url = APPS_SCRIPT_URL + '?action=descriptors';
-      const res = await fetch(url);
-      allDescriptors = await res.json();
-    } catch(e) {}
-  };
-  document.head.appendChild(s);
+      await Promise.all([
+        faceapi.nets.tinyFaceDetector.loadFromUri(WEIGHTS_URL),
+        faceapi.nets.faceLandmark68Net.loadFromUri(WEIGHTS_URL),
+        faceapi.nets.faceRecognitionNet.loadFromUri(WEIGHTS_URL),
+      ]);
+      faceApiLoaded = true;
+      document.getElementById('cameraLabel').textContent = '✅ Face model ready — look at camera';
+      break;
+    } catch(e) {
+      attempts++;
+      if (attempts < 3) {
+        document.getElementById('cameraLabel').textContent = '⏳ Loading face model... attempt ' + (attempts+1);
+        await new Promise(r => setTimeout(r, 2000));
+      } else {
+        document.getElementById('cameraLabel').textContent = '⚠️ Face model slow — tap Capture anyway';
+        faceApiLoaded = false;
+      }
+    }
+  }
+
+  // Load face descriptors
+  try {
+    const url = APPS_SCRIPT_URL + '?action=descriptors';
+    const res = await fetch(url);
+    allDescriptors = await res.json();
+  } catch(e) { allDescriptors = []; }
 }
 
 // ── Capture ───────────────────────────────────────────────────
@@ -277,13 +311,24 @@ async function capturePhoto() {
   document.getElementById('cameraWrap').style.display = 'none';
   document.getElementById('btnCapture').textContent   = '🔄 Retake';
 
-  if (faceApiLoaded) await matchFace(canvas);
-  else {
-    showLoading('Face model loading...');
-    let t=0; const iv=setInterval(async()=>{t++;
-      if(faceApiLoaded){clearInterval(iv);hideLoading();await matchFace(canvas);}
-      else if(t>20){clearInterval(iv);hideLoading();alert('Face model failed. Check internet.');resetCamera();}
-    },1000);
+  if (faceApiLoaded) {
+    await matchFace(canvas);
+  } else {
+    showLoading('Waiting for face model...');
+    let t = 0;
+    const iv = setInterval(async () => {
+      t++;
+      if (faceApiLoaded) {
+        clearInterval(iv); hideLoading(); await matchFace(canvas);
+      } else if (t > 30) {
+        clearInterval(iv); hideLoading();
+        // Try reloading face API one more time
+        document.getElementById('cameraLabel').textContent = '🔄 Retrying face model...';
+        await loadFaceApi();
+        if (faceApiLoaded) await matchFace(canvas);
+        else { alert('Face model could not load. Please check internet and refresh page.'); resetCamera(); }
+      }
+    }, 1000);
   }
 }
 
@@ -338,8 +383,7 @@ async function submitPunch() {
       token:  TOKEN,
       lat:    gpsData.lat,
       lng:    gpsData.lng,
-      faceMatch: empData._faceMatch,
-      photoBase64: capturedPhoto
+      faceMatch: empData._faceMatch
     };
     const payload = encodeURIComponent(JSON.stringify(punchData));
     const res  = await fetch(APPS_SCRIPT_URL + '?action=punch&data=' + payload);
