@@ -17,48 +17,61 @@
   .logo-sub{font-size:11px;color:var(--muted);letter-spacing:2px}
   .time-display .time{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;text-align:right}
   .time-display .date{font-size:11px;color:var(--muted);text-align:right}
-  .container{width:100%;max-width:480px;padding:20px 16px}
-  .card{background:var(--surface);border-radius:var(--radius);padding:22px;margin-bottom:14px;border:1px solid #ffffff08}
-  .card-title{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px}
+  .container{width:100%;max-width:480px;padding:16px}
+
+  /* Employee card */
   .emp-card{width:100%;max-width:480px;margin:16px 16px 0;background:var(--surface2);border-radius:14px;padding:16px;display:none;align-items:center;gap:14px;border:1px solid #ffffff10}
-  .emp-avatar{width:52px;height:52px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;flex-shrink:0;overflow:hidden}
-  .emp-avatar img{width:100%;height:100%;object-fit:cover}
+  .emp-avatar{width:52px;height:52px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;flex-shrink:0}
   .emp-name-text{font-size:16px;font-weight:600}
   .emp-meta-text{font-size:12px;color:var(--muted);margin-top:3px}
   .emp-type-badge{margin-left:auto;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600}
   .type-office{background:#00d4aa20;color:var(--green)}
   .type-worker{background:#ffd06020;color:var(--yellow)}
+
+  /* Camera */
   .camera-wrap{position:relative;width:100%;aspect-ratio:4/3;border-radius:12px;overflow:hidden;background:#000}
   video{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover}
-  .face-guide{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:180px;height:220px;border:2px solid var(--green);border-radius:50%;box-shadow:0 0 0 2000px rgba(0,0,0,0.45);pointer-events:none}
-  .camera-label{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-size:12px;color:#fff;background:rgba(0,0,0,0.6);padding:4px 12px;border-radius:20px;white-space:nowrap}
-  .preview-wrap{display:none;margin-bottom:10px}
-  .preview-wrap img{width:100%;border-radius:10px}
-  .preview-label{font-size:12px;color:var(--green);text-align:center;margin-top:6px}
-  .gps-status{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:10px;font-size:13px;margin-top:12px}
+
+  /* Scanning animation overlay */
+  .scan-overlay{position:absolute;inset:0;pointer-events:none}
+  .face-oval{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:200px;height:240px;border:3px solid var(--green);border-radius:50%;transition:border-color 0.3s,box-shadow 0.3s}
+  .face-oval.scanning{border-color:var(--yellow);box-shadow:0 0 20px #ffd06040}
+  .face-oval.matched{border-color:var(--green);box-shadow:0 0 30px #00d4aa60}
+  .face-oval.failed{border-color:var(--accent);box-shadow:0 0 20px #e9456040}
+
+  /* Scan line animation */
+  .scan-line{position:absolute;left:50%;transform:translateX(-50%);width:180px;height:2px;background:linear-gradient(90deg,transparent,var(--green),transparent);top:30%;animation:scanline 2s ease-in-out infinite;display:none}
+  @keyframes scanline{0%{top:25%;opacity:0}10%{opacity:1}90%{opacity:1}100%{top:75%;opacity:0}}
+
+  /* Status bar */
+  .status-bar{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.75);padding:10px 14px;text-align:center}
+  .status-text{font-size:13px;font-weight:500;color:#fff}
+  .status-sub{font-size:11px;color:var(--muted);margin-top:2px}
+
+  /* GPS */
+  .gps-status{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;font-size:13px;margin-top:10px}
   .gps-ok{background:#00d4aa15;color:var(--green);border:1px solid #00d4aa30}
   .gps-fail{background:#e9456015;color:var(--accent);border:1px solid #e9456030}
   .gps-loading{background:#ffd06015;color:var(--yellow);border:1px solid #ffd06030}
   .gps-dot{width:8px;height:8px;border-radius:50%;background:currentColor;flex-shrink:0}
-  .btn{width:100%;padding:15px;border-radius:12px;border:none;font-family:'Inter',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s;letter-spacing:0.5px}
-  .btn:disabled{opacity:0.4;cursor:not-allowed}
-  .btn:active{transform:scale(0.98)}
-  .btn-capture{background:var(--surface2);color:var(--text);border:1px solid #ffffff15;margin-bottom:10px}
-  .btn-capture:hover:not(:disabled){border-color:var(--green);color:var(--green)}
-  .btn-punch{background:linear-gradient(135deg,#00d4aa,#00a884);color:#000;font-size:16px}
-  .btn-punch-out{background:linear-gradient(135deg,#e94560,#c0392b);color:#fff}
-  .btn-reset{background:var(--surface2);color:var(--text);border:1px solid #ffffff15;margin-top:20px}
-  .result-card{text-align:center;padding:32px 24px}
-  .result-icon{font-size:64px;margin-bottom:14px}
-  .result-title{font-size:20px;font-weight:700;margin-bottom:6px}
-  .result-time{font-size:38px;font-weight:300;color:var(--green);margin:12px 0;font-variant-numeric:tabular-nums}
-  .result-meta{font-size:13px;color:var(--muted)}
-  .result-location{margin-top:12px;font-size:12px;padding:6px 14px;border-radius:20px;display:inline-block}
+
+  /* Result */
+  .result-card{text-align:center;padding:32px 24px;background:var(--surface);border-radius:var(--radius);border:1px solid #ffffff08}
+  .result-icon{font-size:80px;margin-bottom:16px}
+  .result-name{font-size:24px;font-weight:700;margin-bottom:4px}
+  .result-action{font-size:16px;color:var(--muted);margin-bottom:16px}
+  .result-time{font-size:48px;font-weight:300;color:var(--green);font-variant-numeric:tabular-nums;margin:12px 0}
+  .result-location{font-size:12px;padding:6px 14px;border-radius:20px;display:inline-block;margin-top:8px}
   .loc-ok{background:#00d4aa15;color:var(--green)}
   .loc-warn{background:#ffd06015;color:var(--yellow)}
-  .late-badge{display:inline-block;background:#e9456020;color:var(--accent);padding:3px 10px;border-radius:20px;font-size:11px;margin-top:8px}
+  .late-badge{display:inline-block;background:#e9456020;color:var(--accent);padding:4px 12px;border-radius:20px;font-size:12px;margin-top:10px}
+  .btn-reset{width:100%;padding:14px;border-radius:12px;border:none;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;background:var(--surface2);color:var(--text);border:1px solid #ffffff15;margin-top:20px}
+
+  /* Invalid */
   .invalid-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:70vh;text-align:center;padding:20px}
-  .loading-overlay{display:none;position:fixed;inset:0;background:rgba(15,15,26,0.92);z-index:100;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+
+  /* Loading overlay */
+  .loading-overlay{display:none;position:fixed;inset:0;background:rgba(15,15,26,0.95);z-index:100;align-items:center;justify-content:center;flex-direction:column;gap:16px}
   .loading-overlay.show{display:flex}
   .spinner{width:48px;height:48px;border:3px solid #ffffff15;border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
@@ -66,16 +79,16 @@
   .progress-wrap{width:280px;height:6px;background:#ffffff15;border-radius:3px;overflow:hidden;display:none}
   .progress-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--green));border-radius:3px;width:0%;transition:width 0.5s ease}
   .progress-label{font-size:12px;color:var(--green);text-align:center;min-height:18px}
-  .steps{display:flex;gap:8px;margin-bottom:20px}
-  .step{flex:1;height:3px;border-radius:2px;background:#ffffff15;transition:background 0.4s}
-  .step.active{background:var(--accent)}
-  .step.done{background:var(--green)}
+
+  /* Retry button */
+  .btn-retry{width:100%;padding:13px;border-radius:12px;border:1px solid var(--accent);background:transparent;color:var(--accent);font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin-top:10px;display:none}
 </style>
 </head>
 <body>
 
+<!-- Loading Overlay -->
 <div class="loading-overlay" id="loadingOverlay">
-  <div class="spinner" id="loadingSpinner"></div>
+  <div class="spinner"></div>
   <div class="loading-text" id="loadingText">Verifying your link...</div>
   <div class="progress-wrap" id="progressWrap">
     <div class="progress-bar" id="progressBar"></div>
@@ -83,6 +96,7 @@
   <div class="progress-label" id="progressLabel"></div>
 </div>
 
+<!-- Header -->
 <div class="header">
   <div class="logo">
     <div class="logo-dot"></div>
@@ -97,6 +111,7 @@
   </div>
 </div>
 
+<!-- Employee Card -->
 <div class="emp-card" id="empCard">
   <div class="emp-avatar" id="empAvatar"></div>
   <div>
@@ -106,69 +121,71 @@
   <span class="emp-type-badge" id="empTypeBadge"></span>
 </div>
 
+<!-- Invalid Link -->
 <div class="invalid-wrap" id="invalidWrap" style="display:none">
   <div style="font-size:56px">🔗</div>
   <div style="font-size:20px;font-weight:700;margin-top:16px">Invalid Link</div>
   <div style="font-size:13px;color:var(--muted);margin-top:8px">Please use your personal attendance link sent by HR.</div>
 </div>
 
+<!-- Main -->
 <div class="container" id="mainContent" style="display:none">
-  <div class="steps">
-    <div class="step active" id="step1"></div>
-    <div class="step" id="step2"></div>
-  </div>
 
+  <!-- Camera Section -->
   <div id="sectionCamera">
-    <div class="card">
-      <div class="card-title">Face Verification</div>
-      <div class="camera-wrap" id="cameraWrap">
-        <video id="video" autoplay playsinline muted></video>
-        <div class="face-guide"></div>
-        <div class="camera-label" id="cameraLabel">Look straight at camera</div>
+    <div class="camera-wrap" id="cameraWrap">
+      <video id="video" autoplay playsinline muted></video>
+      <div class="scan-overlay">
+        <div class="face-oval" id="faceOval"></div>
+        <div class="scan-line" id="scanLine"></div>
+        <div class="status-bar">
+          <div class="status-text" id="statusText">Preparing camera...</div>
+          <div class="status-sub" id="statusSub"></div>
+        </div>
       </div>
-      <div class="preview-wrap" id="previewWrap">
-        <img id="previewImg" src="">
-        <div class="preview-label">✅ Photo captured</div>
-      </div>
-      <div class="gps-status gps-loading" id="gpsStatus">
-        <div class="gps-dot"></div>
-        <span id="gpsText">Getting your location...</span>
-      </div>
-      <br>
-      <button class="btn btn-capture" id="btnCapture" onclick="capturePhoto()">📸 Capture Photo</button>
     </div>
-    <button class="btn btn-punch" id="btnPunch" disabled onclick="submitPunch()">✅ Mark Attendance</button>
+    <div class="gps-status gps-loading" id="gpsStatus" style="margin-top:12px">
+      <div class="gps-dot"></div>
+      <span id="gpsText">Getting your location...</span>
+    </div>
+    <button class="btn-retry" id="btnRetry" onclick="startAutoScan()">🔄 Try Again</button>
   </div>
 
+  <!-- Result Section -->
   <div id="sectionResult" style="display:none">
-    <div class="card result-card">
+    <div class="result-card">
       <div class="result-icon" id="resultIcon">✅</div>
-      <div class="result-title" id="resultTitle">-</div>
+      <div class="result-name" id="resultName">-</div>
+      <div class="result-action" id="resultAction">-</div>
       <div class="result-time" id="resultTime">-</div>
-      <div class="result-meta" id="resultMeta">-</div>
       <div class="result-location" id="resultLocation">-</div>
       <div id="lateBadge" style="display:none"><span class="late-badge">⚠️ Marked Late</span></div>
-      <button class="btn btn-reset" onclick="resetPunch()">Mark Another Punch</button>
+      <button class="btn-reset" onclick="resetForNextPunch()">🔄 Mark Another Punch</button>
     </div>
   </div>
+
 </div>
 
 <script>
-// ── Config — Apps Script URL ──────────────────────────────────
+// ── Config ────────────────────────────────────────────────────
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwk4R4cmf8quXYcd-f8fMJ-BNZAzax_9erfqNfoLlHIWVomFieup2L6aIFrgTXeVeUbbQ/exec";
+const WEIGHTS_URL     = 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights';
+const FACEAPI_URL     = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js'; const FACEAPI_URL2 = 'https://unpkg.com/face-api.js@0.22.2/dist/face-api.min.js';
 
-// ── Get URL params ────────────────────────────────────────────
-const params  = new URLSearchParams(window.location.search);
-const EMP_ID  = params.get('emp')   || '';
-const TOKEN   = params.get('token') || '';
+// ── URL Params ────────────────────────────────────────────────
+const params = new URLSearchParams(window.location.search);
+const EMP_ID = params.get('emp')   || '';
+const TOKEN  = params.get('token') || '';
 
 // ── State ─────────────────────────────────────────────────────
-let empData       = null;
-let allDescriptors= [];
-let capturedPhoto = null;
-let gpsData       = { lat:null, lng:null, ok:false };
-let stream        = null;
-let faceApiLoaded = false;
+let empData        = null;
+let allDescriptors = [];
+let gpsData        = { lat: null, lng: null, ok: false };
+let stream         = null;
+let faceApiLoaded  = false;
+let scanning       = false;
+let scanInterval   = null;
+let punchSubmitted = false;
 
 // ── Clock ─────────────────────────────────────────────────────
 function updateClock() {
@@ -176,284 +193,313 @@ function updateClock() {
   document.getElementById('clock').textContent       = now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
   document.getElementById('dateDisplay').textContent = now.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
 }
-setInterval(updateClock,1000); updateClock();
-
-// ── Call Apps Script ──────────────────────────────────────────
-function callScript(action, data) {
-  return new Promise((resolve, reject) => {
-    const params = new URLSearchParams({ action, ...data });
-    fetch(APPS_SCRIPT_URL + '?action=' + action + '&data=' + encodeURIComponent(JSON.stringify(data)))
-      .then(r => r.json())
-      .then(resolve)
-      .catch(reject);
-  });
-}
+setInterval(updateClock, 1000); updateClock();
 
 // ── Boot ──────────────────────────────────────────────────────
 window.onload = async function() {
-  if (!EMP_ID || !TOKEN) {
-    document.getElementById('invalidWrap').style.display = 'flex';
-    return;
-  }
+  if (!EMP_ID || !TOKEN) { showInvalid(); return; }
   showLoading('Verifying your link...');
   try {
     const url = APPS_SCRIPT_URL + '?action=validate&empId=' + encodeURIComponent(EMP_ID) + '&token=' + encodeURIComponent(TOKEN);
     const res = await fetch(url);
     const emp = await res.json();
-    hideLoading();
-    if (!emp.valid) { document.getElementById('invalidWrap').style.display='flex'; return; }
+    if (!emp.valid) { hideLoading(); showInvalid(); return; }
     empData = emp;
     showEmpCard();
     document.getElementById('mainContent').style.display = 'block';
+    // Start everything in parallel
     startCamera();
     getGPS();
-    loadFaceApi();
+    await loadFaceApi();
+    // Once face API loaded — start auto scanning
+    startAutoScan();
   } catch(e) {
     hideLoading();
-    document.getElementById('invalidWrap').style.display = 'flex';
+    showInvalid();
   }
 };
 
+// ── Show Employee Card ────────────────────────────────────────
 function showEmpCard() {
   document.getElementById('empCard').style.display = 'flex';
   const av = document.getElementById('empAvatar');
-  if (empData.photoUrl) av.innerHTML = '<img src="'+empData.photoUrl+'" onerror="this.parentElement.textContent=\''+empData.name[0]+'\'">';
-  else av.textContent = empData.name[0];
+  av.textContent = empData.name[0].toUpperCase();
   document.getElementById('empNameText').textContent = empData.name;
-  document.getElementById('empMetaText').textContent = empData.empId+' · '+empData.department+' · '+empData.shiftStart+'–'+empData.shiftEnd;
+  document.getElementById('empMetaText').textContent = empData.empId + ' · ' + empData.department;
   const b = document.getElementById('empTypeBadge');
   b.textContent = empData.type;
-  b.className   = 'emp-type-badge '+(empData.type==='Office'?'type-office':'type-worker');
+  b.className   = 'emp-type-badge ' + (empData.type === 'Office' ? 'type-office' : 'type-worker');
+}
+
+function showInvalid() {
+  document.getElementById('invalidWrap').style.display = 'flex';
 }
 
 // ── Camera ────────────────────────────────────────────────────
 async function startCamera() {
   try {
-    stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:640,height:480}});
+    stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'user', width:640, height:480 } });
     document.getElementById('video').srcObject = stream;
   } catch(e) {
-    document.getElementById('cameraLabel').textContent = '⚠️ Allow camera in browser settings';
+    setStatus('⚠️ Allow camera access', 'Tap address bar → allow camera');
   }
 }
 
 // ── GPS ───────────────────────────────────────────────────────
 function getGPS() {
-  if (!navigator.geolocation) { setGPS(false,'GPS not supported'); return; }
+  if (!navigator.geolocation) { setGPS(false, 'GPS not supported'); return; }
   navigator.geolocation.getCurrentPosition(
-    p => { gpsData={lat:p.coords.latitude,lng:p.coords.longitude,ok:true}; setGPS(true,'Location captured (±'+Math.round(p.coords.accuracy)+'m)'); checkReady(); },
-    () => { setGPS(false,'Allow location access and retry'); },
-    {enableHighAccuracy:true,timeout:10000}
+    p => { gpsData = { lat: p.coords.latitude, lng: p.coords.longitude, ok: true }; setGPS(true, '📍 Location ready (±' + Math.round(p.coords.accuracy) + 'm)'); },
+    () => { setGPS(false, '❌ Allow location access'); },
+    { enableHighAccuracy: true, timeout: 10000 }
   );
 }
-function setGPS(ok,text) {
-  document.getElementById('gpsStatus').className = 'gps-status '+(ok?'gps-ok':'gps-fail');
-  document.getElementById('gpsText').textContent = (ok?'📍 ':'❌ ')+text;
+function setGPS(ok, text) {
+  const el = document.getElementById('gpsStatus');
+  el.className = 'gps-status ' + (ok ? 'gps-ok' : 'gps-fail');
+  document.getElementById('gpsText').textContent = text;
 }
 
-// ── Face API ──────────────────────────────────────────────────
-const WEIGHTS_URL = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights';
-const FACEAPI_URL = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js';
-
-// Register service worker for caching
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(()=>{});
-}
-
+// ── Load Face API ─────────────────────────────────────────────
 async function loadFaceApi() {
   document.getElementById('progressWrap').style.display = 'block';
-  showLoading('Loading face recognition...');
-  setProgress(5, 'Starting...');
-  document.getElementById('cameraLabel').textContent = '⏳ Loading face model...';
-  
-  // Load face-api.js script
-  // Step 1 - Load library
-  setProgress(15, 'Loading face library...');
+  setProgress(10, 'Loading face library...');
+
   await new Promise((resolve, reject) => {
     if (window.faceapi) { resolve(); return; }
-    const s   = document.createElement('script');
-    s.src     = FACEAPI_URL;
-    s.onload  = resolve;
-    s.onerror = reject;
+    const s = document.createElement('script');
+    s.src = FACEAPI_URL;
+    s.onload = resolve;
+    s.onerror = () => {
+      // Try backup URL
+      const s2 = document.createElement('script');
+      s2.src = FACEAPI_URL2;
+      s2.onload = resolve;
+      s2.onerror = reject;
+      document.head.appendChild(s2);
+    };
     document.head.appendChild(s);
   });
-  setProgress(30, 'Library loaded ✅');
+  setProgress(25, 'Library loaded ✅');
 
-  // Step 2 - Load models one by one with progress
-  let attempts = 0;
-  while (attempts < 3) {
+  const WEIGHTS_URLS = [
+    'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights',
+    'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights',
+    'https://unpkg.com/face-api.js@0.22.2/weights'
+  ];
+
+  let loaded = false;
+  for (let wi = 0; wi < WEIGHTS_URLS.length && !loaded; wi++) {
+    const wUrl = WEIGHTS_URLS[wi];
     try {
-      setProgress(45, 'Loading face detector...');
-      await faceapi.nets.tinyFaceDetector.loadFromUri(WEIGHTS_URL);
-      setProgress(62, 'Loading face landmarks...');
-      await faceapi.nets.faceLandmark68Net.loadFromUri(WEIGHTS_URL);
+      setProgress(40, 'Loading face detector... (source ' + (wi+1) + ')');
+      await faceapi.nets.tinyFaceDetector.loadFromUri(wUrl);
+      setProgress(60, 'Loading face landmarks...');
+      await faceapi.nets.faceLandmark68Net.loadFromUri(wUrl);
       setProgress(80, 'Loading recognition model...');
-      await faceapi.nets.faceRecognitionNet.loadFromUri(WEIGHTS_URL);
+      await faceapi.nets.faceRecognitionNet.loadFromUri(wUrl);
       faceApiLoaded = true;
+      loaded = true;
       setProgress(90, 'Models loaded ✅');
-      break;
     } catch(e) {
-      attempts++;
-      if (attempts < 3) {
-        setProgress(30, 'Slow connection — retrying ' + (attempts+1) + '/3...');
-        await new Promise(r => setTimeout(r, 2000));
-      } else {
-        document.getElementById('cameraLabel').textContent = '⚠️ Failed to load — refresh page';
-        hideLoading();
-        document.getElementById('progressWrap').style.display = 'none';
-        return;
-      }
+      setProgress(30, 'Trying next source...');
+      await new Promise(r => setTimeout(r, 1000));
     }
   }
+  if (!loaded) {
+    setStatus('⚠️ Face model failed to load', 'Check internet and refresh page');
+    hideLoading();
+    return;
+  }
 
-  // Step 3 - Load employee descriptors
-  setProgress(95, 'Loading employee profiles...');
+  // Load descriptors
   try {
-    const url = APPS_SCRIPT_URL + '?action=descriptors';
-    const res = await fetch(url);
+    const res = await fetch(APPS_SCRIPT_URL + '?action=descriptors');
     allDescriptors = await res.json();
   } catch(e) { allDescriptors = []; }
 
-  // Done
-  setProgress(100, '✅ Ready! You can now capture your photo');
-  await new Promise(r => setTimeout(r, 800));
+  setProgress(100, '✅ Ready — look at the camera');
+  await new Promise(r => setTimeout(r, 600));
   hideLoading();
   document.getElementById('progressWrap').style.display = 'none';
-  document.getElementById('cameraLabel').textContent = '✅ Ready — look at camera';
 }
 
-// ── Capture ───────────────────────────────────────────────────
-async function capturePhoto() {
-  const video  = document.getElementById('video');
-  const canvas = document.createElement('canvas');
-  canvas.width  = video.videoWidth  || 640;
-  canvas.height = video.videoHeight || 480;
-  canvas.getContext('2d').drawImage(video,0,0);
-  capturedPhoto = canvas.toDataURL('image/jpeg',0.75);
-  document.getElementById('previewImg').src           = capturedPhoto;
-  document.getElementById('previewWrap').style.display= 'block';
-  document.getElementById('cameraWrap').style.display = 'none';
-  document.getElementById('btnCapture').textContent   = '🔄 Retake';
+// ── Auto Face Scanning ────────────────────────────────────────
+function startAutoScan() {
+  if (scanning || punchSubmitted) return;
+  scanning = true;
+  document.getElementById('btnRetry').style.display = 'none';
 
-  if (faceApiLoaded) {
-    await matchFace(canvas);
-  } else {
-    showLoading('Waiting for face model...');
-    let t = 0;
-    const iv = setInterval(async () => {
-      t++;
-      if (faceApiLoaded) {
-        clearInterval(iv); hideLoading(); await matchFace(canvas);
-      } else if (t > 30) {
-        clearInterval(iv); hideLoading();
-        // Try reloading face API one more time
-        document.getElementById('cameraLabel').textContent = '🔄 Retrying face model...';
-        await loadFaceApi();
-        if (faceApiLoaded) await matchFace(canvas);
-        else { alert('Face model could not load. Please check internet and refresh page.'); resetCamera(); }
+  const oval = document.getElementById('faceOval');
+  const line = document.getElementById('scanLine');
+  oval.className = 'face-oval scanning';
+  line.style.display = 'block';
+  setStatus('👀 Look at the camera', 'Scanning your face...');
+
+  let attempts = 0;
+  const MAX_ATTEMPTS = 20; // try for ~10 seconds
+
+  scanInterval = setInterval(async () => {
+    if (!faceApiLoaded || punchSubmitted) return;
+    attempts++;
+
+    const video = document.getElementById('video');
+    if (!video.videoWidth) return; // camera not ready yet
+
+    // Capture frame
+    const canvas = document.createElement('canvas');
+    canvas.width  = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+
+    try {
+      const det = await faceapi.detectSingleFace(canvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 320 }))
+        .withFaceLandmarks().withFaceDescriptor();
+
+      if (!det) {
+        setStatus('👀 Look at the camera', 'Attempt ' + attempts + '/' + MAX_ATTEMPTS);
+        if (attempts >= MAX_ATTEMPTS) {
+          stopScan();
+          oval.className = 'face-oval failed';
+          setStatus('❌ Face not detected', 'Make sure face is in the oval');
+          document.getElementById('btnRetry').style.display = 'block';
+        }
+        return;
       }
-    }, 1000);
-  }
+
+      // Face detected — match it
+      setStatus('🔍 Face detected — matching...', '');
+      let bestMatch = null, bestDist = 1;
+      for (const fd of allDescriptors) {
+        const d = faceapi.euclideanDistance(det.descriptor, new Float32Array(fd.faceDescriptor));
+        if (d < bestDist) { bestDist = d; bestMatch = fd; }
+      }
+      const pct = Math.round((1 - bestDist) * 100);
+
+      if (bestMatch && bestMatch.empId === empData.empId && pct >= 55) {
+        // ✅ Match found
+        stopScan();
+        oval.className = 'face-oval matched';
+        line.style.display = 'none';
+        setStatus('✅ Face matched — ' + pct + '%', 'Marking attendance...');
+        empData._faceMatch = pct + '%';
+
+        // Wait for GPS if not ready
+        if (!gpsData.ok) {
+          setStatus('⏳ Waiting for GPS...', 'Getting your location');
+          await new Promise(r => setTimeout(r, 3000));
+        }
+
+        // Submit punch
+        await submitPunch(canvas);
+
+      } else if (bestMatch && bestMatch.empId !== empData.empId) {
+        stopScan();
+        oval.className = 'face-oval failed';
+        setStatus('❌ Wrong person detected', 'This link belongs to ' + empData.name);
+        document.getElementById('btnRetry').style.display = 'block';
+      } else {
+        setStatus('🔍 Matching... ' + pct + '%', 'Hold still');
+      }
+
+    } catch(e) { /* keep trying */ }
+
+  }, 500); // scan every 500ms
 }
 
-async function matchFace(canvas) {
-  showLoading('Verifying face...');
-  try {
-    const det = await faceapi.detectSingleFace(canvas,new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
-    hideLoading();
-    if (!det) { alert('❌ No face detected. Retake in good lighting.'); resetCamera(); return; }
-    let best=null, bestD=1;
-    for (const fd of allDescriptors) {
-      const d = faceapi.euclideanDistance(det.descriptor, new Float32Array(fd.faceDescriptor));
-      if (d<bestD) { bestD=d; best=fd; }
-    }
-    const pct = Math.round((1-bestD)*100);
-    if (best && best.empId===empData.empId && pct>=60) {
-      empData._faceMatch = pct+'%';
-      document.getElementById('cameraLabel').textContent = '✅ Face matched — '+pct+'%';
-      checkReady();
-    } else if (best && best.empId!==empData.empId) {
-      alert('❌ Face does not match this account. Use your own link.');
-      resetCamera();
-    } else {
-      alert('❌ Face not recognised ('+pct+'%). Try in better lighting.');
-      resetCamera();
-    }
-  } catch(e) { hideLoading(); alert('❌ Face error. Retake photo.'); resetCamera(); }
-}
-
-function resetCamera() {
-  capturedPhoto=null; if(empData) empData._faceMatch=null;
-  document.getElementById('previewWrap').style.display='none';
-  document.getElementById('cameraWrap').style.display='block';
-  document.getElementById('btnCapture').textContent='📸 Capture Photo';
-  checkReady();
-}
-
-function checkReady() {
-  document.getElementById('btnPunch').disabled = !(capturedPhoto && gpsData.ok && empData && empData._faceMatch);
+function stopScan() {
+  scanning = false;
+  if (scanInterval) { clearInterval(scanInterval); scanInterval = null; }
 }
 
 // ── Submit Punch ──────────────────────────────────────────────
-async function submitPunch() {
-  showLoading('Recording attendance...');
+async function submitPunch(canvas) {
+  if (punchSubmitted) return;
+  punchSubmitted = true;
+
+  // Stop camera stream
+  if (stream) stream.getTracks().forEach(t => t.stop());
+
   try {
-    const url = APPS_SCRIPT_URL + '?action=punch&empId='+encodeURIComponent(empData.empId)+'&token='+encodeURIComponent(TOKEN)+'&lat='+gpsData.lat+'&lng='+gpsData.lng+'&faceMatch='+encodeURIComponent(empData._faceMatch)+'&device='+encodeURIComponent(navigator.userAgent.substring(0,50));
-    // Send photo separately via POST
-    // Use GET to avoid CORS
     const punchData = {
-      action: 'punch',
-      empId:  empData.empId,
-      token:  TOKEN,
-      lat:    gpsData.lat,
-      lng:    gpsData.lng,
-      faceMatch: empData._faceMatch
+      action:    'punch',
+      empId:     empData.empId,
+      token:     TOKEN,
+      lat:       gpsData.lat   || 0,
+      lng:       gpsData.lng   || 0,
+      faceMatch: empData._faceMatch || '0%',
+      device:    navigator.userAgent.substring(0, 50)
     };
     const payload = encodeURIComponent(JSON.stringify(punchData));
-    const res  = await fetch(APPS_SCRIPT_URL + '?action=punch&data=' + payload);
-    const data = await res.json();
-    hideLoading();
+    const res     = await fetch(APPS_SCRIPT_URL + '?action=punch&data=' + payload);
+    const data    = await res.json();
+
     if (data.success) showResult(data);
-    else alert('❌ '+data.message);
-  } catch(e) { hideLoading(); alert('Error: '+e.message); }
+    else {
+      setStatus('⚠️ ' + data.message, '');
+      document.getElementById('btnRetry').style.display = 'block';
+      punchSubmitted = false;
+    }
+  } catch(e) {
+    setStatus('❌ Network error — try again', '');
+    document.getElementById('btnRetry').style.display = 'block';
+    punchSubmitted = false;
+  }
 }
 
+// ── Show Result ───────────────────────────────────────────────
 function showResult(res) {
-  if(stream) stream.getTracks().forEach(t=>t.stop());
-  document.getElementById('sectionCamera').style.display='none';
-  document.getElementById('sectionResult').style.display='block';
-  document.getElementById('step1').className='step done';
-  document.getElementById('step2').className='step active';
-  const isIn = res.punchType==='IN';
-  document.getElementById('resultIcon').textContent  = isIn?'✅':'👋';
-  document.getElementById('resultTitle').textContent = 'Punch '+res.punchType+' — '+res.empName;
-  document.getElementById('resultTime').textContent  = res.time;
-  document.getElementById('resultMeta').textContent  = empData.department+' · Face: '+empData._faceMatch;
-  const locEl = document.getElementById('resultLocation');
-  locEl.textContent = '📍 '+res.locationStatus;
-  locEl.className   = 'result-location '+(res.locationStatus.includes('Outside')?'loc-warn':'loc-ok');
-  document.getElementById('lateBadge').style.display = res.lateNote?'block':'none';
+  document.getElementById('sectionCamera').style.display = 'none';
+  document.getElementById('sectionResult').style.display = 'block';
+
+  const isIn = res.punchType === 'IN';
+  document.getElementById('resultIcon').textContent   = isIn ? '✅' : '👋';
+  document.getElementById('resultName').textContent   = res.empName;
+  document.getElementById('resultAction').textContent = isIn ? 'Checked IN' : 'Checked OUT';
+  document.getElementById('resultTime').textContent   = res.time;
+
+  const locEl   = document.getElementById('resultLocation');
+  const outside = res.locationStatus && res.locationStatus.includes('Outside');
+  locEl.textContent = '📍 ' + (res.locationStatus || 'Location recorded');
+  locEl.className   = 'result-location ' + (outside ? 'loc-warn' : 'loc-ok');
+
+  document.getElementById('lateBadge').style.display = res.lateNote ? 'block' : 'none';
 }
 
-function resetPunch() {
-  capturedPhoto=null; if(empData) empData._faceMatch=null;
-  document.getElementById('sectionCamera').style.display='block';
-  document.getElementById('sectionResult').style.display='none';
-  document.getElementById('step1').className='step active';
-  document.getElementById('step2').className='step';
-  document.getElementById('previewWrap').style.display='none';
-  document.getElementById('cameraWrap').style.display='block';
-  document.getElementById('btnCapture').textContent='📸 Capture Photo';
-  document.getElementById('btnPunch').disabled=true;
-  startCamera(); getGPS();
+// ── Reset for next punch ──────────────────────────────────────
+function resetForNextPunch() {
+  punchSubmitted = false;
+  scanning       = false;
+  gpsData        = { lat: null, lng: null, ok: false };
+
+  document.getElementById('sectionCamera').style.display = 'block';
+  document.getElementById('sectionResult').style.display = 'none';
+  document.getElementById('faceOval').className = 'face-oval';
+  document.getElementById('scanLine').style.display = 'none';
+  document.getElementById('btnRetry').style.display = 'none';
+
+  startCamera();
+  getGPS();
+  startAutoScan();
 }
 
+// ── Helpers ───────────────────────────────────────────────────
+function setStatus(text, sub) {
+  document.getElementById('statusText').textContent = text;
+  document.getElementById('statusSub').textContent  = sub || '';
+}
 function setProgress(pct, label) {
   document.getElementById('progressBar').style.width   = pct + '%';
   document.getElementById('progressLabel').textContent = label;
   document.getElementById('loadingText').textContent   = 'Loading face recognition... ' + pct + '%';
 }
-function showLoading(t){document.getElementById('loadingText').textContent=t;document.getElementById('loadingOverlay').classList.add('show')}
-function hideLoading(){document.getElementById('loadingOverlay').classList.remove('show')}
+function showLoading(t) { document.getElementById('loadingText').textContent = t; document.getElementById('loadingOverlay').classList.add('show'); }
+function hideLoading()  { document.getElementById('loadingOverlay').classList.remove('show'); }
+
+// Service worker for caching
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
 </script>
 </body>
 </html>
