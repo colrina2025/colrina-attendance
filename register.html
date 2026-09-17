@@ -274,11 +274,28 @@ async function saveEmployee() {
   showLoading('Saving employee & generating link...');
   if(stream) stream.getTracks().forEach(t=>t.stop());
   try {
-    // Use GET to avoid CORS — send data as URL parameter
-    const payload = encodeURIComponent(JSON.stringify({action:'register',...empData}));
+    // Send only essential data via GET (no photo - too large for URL)
+    const essentialData = {
+      action:      'register',
+      empId:       empData.empId,
+      name:        empData.name,
+      department:  empData.department,
+      designation: empData.designation,
+      phone:       empData.phone,
+      type:        empData.type,
+      shiftStart:  empData.shiftStart,
+      shiftEnd:    empData.shiftEnd,
+      status:      empData.status,
+      faceDescriptor: empData.faceDescriptor,
+      githubPagesUrl: GITHUB_PAGES_URL
+    };
+    const payload = encodeURIComponent(JSON.stringify(essentialData));
     const url = APPS_SCRIPT_URL + '?action=register&data=' + payload;
     const res  = await fetch(url);
-    const data = await res.json();
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); }
+    catch(pe) { throw new Error('Server response error: ' + text.substring(0,100)); }
     hideLoading();
     if(data.success) {
       _link=data.personalLink; _empName=data.name; _empPhone=data.phone;
@@ -287,7 +304,7 @@ async function saveEmployee() {
       document.getElementById('linkCard').style.display='block';
       document.getElementById('linkSub').textContent=data.name+' ('+data.empId+') — share this link';
       document.getElementById('linkBox').textContent=data.personalLink;
-    } else { alert('❌ '+data.message); }
+    } else { alert('❌ '+(data.message||'Unknown error')); }
   } catch(e) { hideLoading(); alert('❌ Error: '+e.message); }
 }
 
