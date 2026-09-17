@@ -34,14 +34,17 @@
 
   /* Scanning animation overlay */
   .scan-overlay{position:absolute;inset:0;pointer-events:none}
-  .face-oval{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:200px;height:240px;border:3px solid var(--green);border-radius:50%;transition:border-color 0.3s,box-shadow 0.3s}
-  .face-oval.scanning{border-color:var(--yellow);box-shadow:0 0 20px #ffd06040}
-  .face-oval.matched{border-color:var(--green);box-shadow:0 0 30px #00d4aa60}
-  .face-oval.failed{border-color:var(--accent);box-shadow:0 0 20px #e9456040}
+  .face-oval{display:none}
+  .face-oval.scanning{display:none}
+  .face-oval.matched{display:none}
+  .face-oval.failed{display:none}
+  .scan-line{display:none !important}
+  @keyframes scanline{}
 
-  /* Scan line animation */
-  .scan-line{position:absolute;left:50%;transform:translateX(-50%);width:180px;height:2px;background:linear-gradient(90deg,transparent,var(--green),transparent);top:30%;animation:scanline 2s ease-in-out infinite;display:none}
-  @keyframes scanline{0%{top:25%;opacity:0}10%{opacity:1}90%{opacity:1}100%{top:75%;opacity:0}}
+  /* Simple scanning border on camera */
+  .camera-wrap.scanning-active{border:3px solid var(--yellow);box-shadow:0 0 20px #ffd06040}
+  .camera-wrap.matched-active{border:3px solid var(--green);box-shadow:0 0 30px #00d4aa60}
+  .camera-wrap.failed-active{border:3px solid var(--accent);box-shadow:0 0 20px #e9456040}
 
   /* Status bar */
   .status-bar{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.75);padding:10px 14px;text-align:center}
@@ -330,11 +333,9 @@ function startAutoScan() {
   scanning = true;
   document.getElementById('btnRetry').style.display = 'none';
 
-  const oval = document.getElementById('faceOval');
-  const line = document.getElementById('scanLine');
-  oval.className = 'face-oval scanning';
-  line.style.display = 'block';
-  setStatus('👀 Look at the camera', 'Scanning your face...');
+  const cam = document.getElementById('cameraWrap');
+  cam.className = 'camera-wrap scanning-active';
+  setStatus('👀 Look at the camera', 'Hold phone at face level');
 
   let attempts = 0;
   const MAX_ATTEMPTS = 20; // try for ~10 seconds
@@ -360,14 +361,15 @@ function startAutoScan() {
         setStatus('👀 Look at the camera', 'Attempt ' + attempts + '/' + MAX_ATTEMPTS);
         if (attempts >= MAX_ATTEMPTS) {
           stopScan();
-          oval.className = 'face-oval failed';
-          setStatus('❌ Face not detected', 'Make sure face is in the oval');
+          cam.className = 'camera-wrap failed-active';
+          setStatus('❌ Face not detected', 'Look at camera in good lighting');
           document.getElementById('btnRetry').style.display = 'block';
         }
         return;
       }
 
       // Face detected — match it
+      cam.className = 'camera-wrap matched-active';
       setStatus('🔍 Face detected — matching...', '');
       let bestMatch = null, bestDist = 1;
       for (const fd of allDescriptors) {
@@ -379,8 +381,7 @@ function startAutoScan() {
       if (bestMatch && bestMatch.empId === empData.empId && pct >= 55) {
         // ✅ Match found
         stopScan();
-        oval.className = 'face-oval matched';
-        line.style.display = 'none';
+        cam.className = 'camera-wrap matched-active';
         setStatus('✅ Face matched — ' + pct + '%', 'Marking attendance...');
         empData._faceMatch = pct + '%';
 
@@ -395,7 +396,7 @@ function startAutoScan() {
 
       } else if (bestMatch && bestMatch.empId !== empData.empId) {
         stopScan();
-        oval.className = 'face-oval failed';
+        cam.className = 'camera-wrap failed-active';
         setStatus('❌ Wrong person detected', 'This link belongs to ' + empData.name);
         document.getElementById('btnRetry').style.display = 'block';
       } else {
@@ -474,8 +475,7 @@ function resetForNextPunch() {
 
   document.getElementById('sectionCamera').style.display = 'block';
   document.getElementById('sectionResult').style.display = 'none';
-  document.getElementById('faceOval').className = 'face-oval';
-  document.getElementById('scanLine').style.display = 'none';
+  document.getElementById('cameraWrap').className = 'camera-wrap';
   document.getElementById('btnRetry').style.display = 'none';
 
   startCamera();
