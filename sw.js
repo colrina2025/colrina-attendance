@@ -1,7 +1,8 @@
-// Colrina Attendance — Service Worker
-// Caches face model files so they load instantly after first visit
+// Colrina Attendance — Service Worker v2
+// Caches face model files for instant loading after first visit
 
-const CACHE_NAME = 'colrina-face-cache-v1';
+const CACHE_NAME = 'colrina-face-v2';
+
 const URLS_TO_CACHE = [
   'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js',
   'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights/tiny_face_detector_model-weights_manifest.json',
@@ -13,15 +14,19 @@ const URLS_TO_CACHE = [
   'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights/face_recognition_model-shard2'
 ];
 
-// Install — cache all face model files
+// Install — cache all files
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(URLS_TO_CACHE))
+    caches.open(CACHE_NAME).then(cache => {
+      return Promise.allSettled(
+        URLS_TO_CACHE.map(url => cache.add(url).catch(() => {}))
+      );
+    })
   );
   self.skipWaiting();
 });
 
-// Activate — clean old caches
+// Activate — remove old caches
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
@@ -31,16 +36,20 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Fetch — serve from cache first, then network
+// Fetch — cache first, then network
 self.addEventListener('fetch', event => {
-  if (URLS_TO_CACHE.some(url => event.request.url.includes('face-api') || event.request.url.includes('cdn.jsdelivr.net'))) {
+  const url = event.request.url;
+  if (url.includes('face-api') || url.includes('jsdelivr.net') || url.includes('unpkg.com')) {
     event.respondWith(
       caches.match(event.request).then(cached => {
-        return cached || fetch(event.request).then(response => {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+        if (cached) return cached;
+        return fetch(event.request).then(response => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          }
           return response;
-        });
+        }).catch(() => cached);
       })
     );
   }
