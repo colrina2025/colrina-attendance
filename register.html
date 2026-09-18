@@ -253,10 +253,24 @@ function checkReady() {
   const dept=document.getElementById('department').value;
   const desig=document.getElementById('designation').value;
   const type=document.getElementById('empType').value;
-  document.getElementById('btnSave').disabled=!(id&&name&&dept&&desig&&type&&capturedPhoto);
+  // Face descriptor MUST exist to save
+  const hasFaceData = faceDescriptor && faceDescriptor.length > 0;
+  document.getElementById('btnSave').disabled=!(id&&name&&dept&&desig&&type&&capturedPhoto&&hasFaceData);
+
+  // Show warning if photo taken but no face data
+  if (capturedPhoto && !hasFaceData) {
+    const btn = document.getElementById('btnSave');
+    btn.textContent = '⚠️ Face not detected — retake photo';
+  } else {
+    document.getElementById('btnSave').textContent = '💾 Save Employee & Generate Link';
+  }
 }
 
 async function saveEmployee() {
+  if (!faceDescriptor || faceDescriptor.length === 0) {
+    alert('❌ Face data missing! Please retake photo and wait for green ✅ before saving.');
+    return;
+  }
   const empData={
     empId:document.getElementById('empId').value.trim(),
     name:document.getElementById('name').value.trim(),
