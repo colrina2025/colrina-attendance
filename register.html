@@ -74,10 +74,7 @@
       <div class="form-group">
         <label>Department *</label>
         <select id="department" onchange="loadRoles();checkReady()">
-          <option value="">Select...</option>
-          <option>Cutting</option><option>Stitching</option><option>Finishing</option>
-          <option>Packing</option><option>Accounts</option><option>HR</option>
-          <option>Admin</option><option>Management</option><option>Quality</option><option>Dispatch</option>
+          <option value="">Loading...</option>
         </select>
       </div>
       <div class="form-group">
@@ -134,18 +131,23 @@
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwk4R4cmf8quXYcd-f8fMJ-BNZAzax_9erfqNfoLlHIWVomFieup2L6aIFrgTXeVeUbbQ/exec";
 const GITHUB_PAGES_URL = "https://colrina2025.github.io/colrina-attendance";
 
-const ROLES = {
-  'Cutting':['Cutting Master','Cutter','Helper'],
-  'Stitching':['Supervisor','Tailor','Helper'],
-  'Finishing':['Finishing Supervisor','Finishing Worker','Helper'],
-  'Packing':['Packing Supervisor','Packing Worker','Helper'],
-  'Accounts':['Accountant','Accounts Assistant'],
-  'HR':['HR Manager','HR Executive','HR Assistant'],
-  'Admin':['Admin Manager','Admin Executive','Office Boy'],
-  'Management':['Director','Manager','Assistant Manager'],
-  'Quality':['QC Manager','QC Inspector'],
-  'Dispatch':['Dispatch Manager','Dispatch Executive','Helper']
-};
+let ROLES = {};
+
+// Load departments from Google Sheet
+async function loadDepartments() {
+  try {
+    const res = await fetch(APPS_SCRIPT_URL + '?action=deptRoles');
+    ROLES = await res.json();
+    const deptSel = document.getElementById('department');
+    deptSel.innerHTML = '<option value="">Select...</option>';
+    Object.keys(ROLES).sort().forEach(d => {
+      const o = document.createElement('option');
+      o.value = d; o.textContent = d;
+      deptSel.appendChild(o);
+    });
+  } catch(e) { console.log('Failed to load departments'); }
+}
+loadDepartments();
 
 let capturedPhoto=null, faceDescriptor=null, faceApiLoaded=false, stream=null;
 let _link='', _empName='', _empPhone='';
