@@ -431,9 +431,12 @@ async function submitPunch(canvas) {
       faceMatch: empData._faceMatch || '0%',
       device:    navigator.userAgent.substring(0, 50)
     };
-    const payload = encodeURIComponent(JSON.stringify(punchData));
-    const res     = await fetch(APPS_SCRIPT_URL + '?action=punch&data=' + payload);
-    const data    = await res.json();
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify(punchData),
+      headers: {'Content-Type':'text/plain'}
+    });
+    const data = await res.json();
 
     if (data.success) showResult(data);
     else {
