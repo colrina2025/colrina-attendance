@@ -436,7 +436,10 @@ async function submitPunch(canvas) {
       body: JSON.stringify(punchData),
       headers: {'Content-Type':'text/plain'}
     });
-    const data = await res.json();
+    const txt = await res.text();
+    let data;
+    try { data = JSON.parse(txt); }
+    catch(e) { throw new Error('Server: ' + txt.substring(0,100)); }
 
     if (data.success) showResult(data);
     else {
