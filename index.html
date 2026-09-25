@@ -296,7 +296,7 @@ async function loadFaceApi() {
     const wUrl = WEIGHTS_URLS[wi];
     try {
       setProgress(40, 'Loading face detector... (source ' + (wi+1) + ')');
-      await faceapi.nets.tinyFaceDetector.loadFromUri(wUrl);
+      await faceapi.nets.ssdMobilenetv1.loadFromUri(wUrl);
       setProgress(60, 'Loading face landmarks...');
       await faceapi.nets.faceLandmark68Net.loadFromUri(wUrl);
       setProgress(80, 'Loading recognition model...');
@@ -354,7 +354,7 @@ function startAutoScan() {
     canvas.getContext('2d').drawImage(video, 0, 0);
 
     try {
-      const det = await faceapi.detectSingleFace(canvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 320 }))
+      const det = await faceapi.detectSingleFace(canvas, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5 }))
         .withFaceLandmarks().withFaceDescriptor();
 
       if (!det) {
@@ -371,14 +371,23 @@ function startAutoScan() {
       // Face detected — match it
       cam.className = 'camera-wrap matched-active';
       setStatus('🔍 Face detected — matching...', '');
-      let bestMatch = null, bestDist = 1;
+      // Compare ONLY against this employee's own descriptor
+      let selfMatch = null;
       for (const fd of allDescriptors) {
-        const d = faceapi.euclideanDistance(det.descriptor, new Float32Array(fd.faceDescriptor));
-        if (d < bestDist) { bestDist = d; bestMatch = fd; }
+        if (fd.empId === empData.empId) { selfMatch = fd; break; }
       }
-      const pct = Math.round((1 - bestDist) * 100);
+      if (!selfMatch) {
+        stopScan();
+        cam.className = 'camera-wrap failed-active';
+        setStatus('❌ No face profile found', 'Contact HR to re-register');
+        document.getElementById('btnRetry').style.display = 'block';
+        return;
+      }
+      const dist = faceapi.euclideanDistance(det.descriptor, new Float32Array(selfMatch.faceDescriptor));
+      const pct = Math.round((1 - dist) * 100);
+      const bestMatch = selfMatch;
 
-      if (bestMatch && bestMatch.empId === empData.empId && pct >= 55) {
+      if (pct >= 50) {
         // ✅ Match found
         stopScan();
         cam.className = 'camera-wrap matched-active';
@@ -394,11 +403,6 @@ function startAutoScan() {
         // Submit punch
         await submitPunch(canvas);
 
-      } else if (bestMatch && bestMatch.empId !== empData.empId) {
-        stopScan();
-        cam.className = 'camera-wrap failed-active';
-        setStatus('❌ Wrong person detected', 'This link belongs to ' + empData.name);
-        document.getElementById('btnRetry').style.display = 'block';
       } else {
         setStatus('🔍 Matching... ' + pct + '%', 'Hold still');
       }
