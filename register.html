@@ -17,22 +17,22 @@
   .card-title{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
   .form-group{margin-bottom:14px}
   label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
-  input,select{width:100%;background:var(--bg);border:1px solid #ffffff15;border-radius:10px;padding:13px 14px;color:var(--text);font-size:15px;font-family:'Inter',sans-serif;outline:none;transition:border 0.2s}
+  input,select{width:100%;background:var(--bg);border:1px solid #ffffff15;border-radius:10px;padding:13px 14px;color:var(--text);font-size:15px;font-family:'Inter',sans-serif;outline:none}
   input:focus,select:focus{border-color:var(--accent)}
   select option{background:#1a1a2e}
   .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .camera-wrap{position:relative;width:100%;max-width:300px;aspect-ratio:3/4;border-radius:12px;overflow:hidden;background:#000;margin:0 auto;border:3px solid transparent;transition:border 0.3s}
+  .camera-wrap{position:relative;width:100%;max-width:320px;aspect-ratio:3/4;border-radius:12px;overflow:hidden;background:#000;margin:0 auto;border:3px solid transparent;transition:border 0.3s}
   .camera-wrap.ready{border-color:var(--green)}
-  .camera-wrap.scanning{border-color:var(--yellow)}
   video{width:100%;height:100%;object-fit:cover}
-  .preview-img{width:100%;max-width:300px;border-radius:12px;margin:0 auto;display:none;border:3px solid var(--green)}
+  .sample-strip{display:flex;gap:8px;margin-top:12px;justify-content:center}
+  .sample-slot{width:60px;height:80px;border-radius:8px;border:2px dashed #ffffff20;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--muted);overflow:hidden}
+  .sample-slot img{width:100%;height:100%;object-fit:cover}
+  .sample-slot.done{border-color:var(--green);border-style:solid}
   .status-box{padding:12px 14px;border-radius:10px;font-size:13px;margin-top:10px;text-align:center;font-weight:500}
   .status-loading{background:#ffd06015;border:1px solid #ffd06030;color:var(--yellow)}
   .status-ok{background:#00d4aa15;border:1px solid #00d4aa30;color:var(--green)}
   .status-err{background:#e9456015;border:1px solid #e9456030;color:var(--accent)}
-  .progress-wrap{width:100%;height:4px;background:#ffffff15;border-radius:2px;overflow:hidden;margin-top:8px}
-  .progress-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--green));width:0%;transition:width 0.4s}
-  .btn{width:100%;padding:14px;border-radius:12px;border:none;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;margin-top:10px}
+  .btn{width:100%;padding:14px;border-radius:12px;border:none;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin-top:10px}
   .btn:disabled{opacity:0.35;cursor:not-allowed}
   .btn-capture{background:var(--surface2);color:var(--text);border:1px solid #ffffff15}
   .btn-save{background:linear-gradient(135deg,#e94560,#c0392b);color:#fff;font-size:15px}
@@ -57,11 +57,11 @@
 </div>
 <div class="header">
   <div><div class="logo-text">COLRINA</div><div class="logo-sub">Add Employee</div></div>
-  <a href="dashboard.html" style="color:var(--muted);text-decoration:none;font-size:13px">Dashboard →</a>
+  <a href="#" style="color:var(--muted);text-decoration:none;font-size:13px">Dashboard →</a>
 </div>
 <div class="container">
-  <div style="font-size:22px;font-weight:700;margin-bottom:4px">Register New Employee</div>
-  <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Fill details + capture face. Saves to Employee Master sheet.</div>
+  <div style="font-size:22px;font-weight:700;margin-bottom:4px">Register Employee</div>
+  <div style="font-size:13px;color:var(--muted);margin-bottom:20px">3 face samples for strong recognition</div>
 
   <div class="card" id="formCard">
     <div class="card-title">Employee Details</div>
@@ -69,13 +69,11 @@
       <div class="form-group"><label>Emp Code *</label><input type="text" id="empId" placeholder="e.g. COL001" oninput="checkReady()"></div>
       <div class="form-group"><label>Phone</label><input type="tel" id="phone" placeholder="10 digits"></div>
     </div>
-    <div class="form-group"><label>Full Name *</label><input type="text" id="name" placeholder="Employee full name" oninput="checkReady()"></div>
+    <div class="form-group"><label>Full Name *</label><input type="text" id="name" placeholder="Full name" oninput="checkReady()"></div>
     <div class="row">
       <div class="form-group">
         <label>Department *</label>
-        <select id="department" onchange="loadRoles();checkReady()">
-          <option value="">Loading...</option>
-        </select>
+        <select id="department" onchange="loadRoles();checkReady()"><option value="">Loading...</option></select>
       </div>
       <div class="form-group">
         <label>Designation *</label>
@@ -84,11 +82,11 @@
     </div>
     <div class="row">
       <div class="form-group">
-        <label>Employee Type *</label>
+        <label>Type *</label>
         <select id="empType" onchange="checkReady()">
           <option value="">Select...</option>
-          <option value="Office">🏢 Office Staff</option>
-          <option value="Worker">👷 Factory Worker</option>
+          <option value="Office">🏢 Office</option>
+          <option value="Worker">👷 Worker</option>
         </select>
       </div>
       <div class="form-group">
@@ -103,23 +101,24 @@
   </div>
 
   <div class="card">
-    <div class="card-title">📸 Face Capture</div>
+    <div class="card-title">📸 Face Capture (3 samples)</div>
     <div class="camera-wrap" id="cameraWrap">
       <video id="video" autoplay playsinline muted></video>
     </div>
-    <img id="previewImg" class="preview-img">
-    <div class="status-box status-loading" id="statusBox">
-      ⏳ Loading face recognition...
-      <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="sample-strip">
+      <div class="sample-slot" id="slot1">1</div>
+      <div class="sample-slot" id="slot2">2</div>
+      <div class="sample-slot" id="slot3">3</div>
     </div>
-    <button class="btn btn-capture" id="btnCapture" onclick="handleCapture()" disabled>⏳ Waiting for face model...</button>
+    <div class="status-box status-loading" id="statusBox">⏳ Loading face model...</div>
+    <button class="btn btn-capture" id="btnCapture" onclick="captureSample()" disabled>⏳ Please wait...</button>
   </div>
 
   <button class="btn btn-save" id="btnSave" onclick="saveEmployee()" disabled>💾 Save Employee & Generate Link</button>
 
   <div class="link-card" id="linkCard">
     <div class="link-title">✅ Employee Registered!</div>
-    <div class="link-sub" id="linkSub">Personal attendance link generated</div>
+    <div class="link-sub" id="linkSub">Personal link generated</div>
     <div class="link-box" id="linkBox">-</div>
     <button class="btn btn-wa" onclick="shareWhatsApp()">📲 Send on WhatsApp</button>
     <button class="btn btn-copy" onclick="copyLink()">📋 Copy Link</button>
@@ -132,275 +131,201 @@ const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwk4R4cmf8quXYc
 const GITHUB_PAGES_URL = "https://colrina2025.github.io/colrina-attendance";
 
 let ROLES = {};
+let faceDescriptors = []; // array of 3 sample descriptors
+let averagedDescriptor = null;
+let faceApiLoaded = false, stream = null;
+let _link='', _empName='', _empPhone='';
 
-// Load departments from Google Sheet
 async function loadDepartments() {
   try {
     const res = await fetch(APPS_SCRIPT_URL + '?action=deptRoles');
     ROLES = await res.json();
-    const deptSel = document.getElementById('department');
-    deptSel.innerHTML = '<option value="">Select...</option>';
+    const sel = document.getElementById('department');
+    sel.innerHTML = '<option value="">Select...</option>';
     Object.keys(ROLES).sort().forEach(d => {
       const o = document.createElement('option');
       o.value = d; o.textContent = d;
-      deptSel.appendChild(o);
+      sel.appendChild(o);
     });
-  } catch(e) { console.log('Failed to load departments'); }
+  } catch(e) {}
 }
 loadDepartments();
 
-let capturedPhoto=null, faceDescriptor=null, faceApiLoaded=false, stream=null;
-let _link='', _empName='', _empPhone='';
-
 function loadRoles() {
-  const dept=document.getElementById('department').value;
-  const sel=document.getElementById('designation');
-  sel.innerHTML='<option value="">Select...</option>';
-  if(dept&&ROLES[dept]) ROLES[dept].forEach(r=>{const o=document.createElement('option');o.value=r;o.textContent=r;sel.appendChild(o);});
+  const dept = document.getElementById('department').value;
+  const sel = document.getElementById('designation');
+  sel.innerHTML = '<option value="">Select...</option>';
+  if (dept && ROLES[dept]) ROLES[dept].forEach(r => {
+    const o = document.createElement('option');
+    o.value = r; o.textContent = r;
+    sel.appendChild(o);
+  });
 }
 
-// Start camera
 async function startCamera() {
   try {
     if(stream) stream.getTracks().forEach(t=>t.stop());
     stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:640,height:480}});
     document.getElementById('video').srcObject = stream;
-  } catch(e) { 
-    setStatus('err','❌ Camera access denied. Allow camera and refresh.');
-  }
+  } catch(e) { setStatus('err','❌ Camera denied'); }
 }
+startCamera();
 
-// Load face API with retry across 3 CDNs
 async function loadFaceApiRobust() {
-  const CDN_URLS = [
-    { js:'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js',
-      weights:'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights' },
-    { js:'https://unpkg.com/face-api.js@0.22.2/dist/face-api.min.js',
-      weights:'https://unpkg.com/face-api.js@0.22.2/weights' },
-    { js:'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js',
-      weights:'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights' }
+  const CDN = [
+    { js:'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js', w:'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights' },
+    { js:'https://unpkg.com/face-api.js@0.22.2/dist/face-api.min.js', w:'https://unpkg.com/face-api.js@0.22.2/weights' }
   ];
-
-  setProgress(10);
-  setStatus('loading','⏳ Loading face library...');
-
-  // Load face-api.js
+  setStatus('loading','⏳ Loading face model...');
   let libLoaded = false;
-  for (const cdn of CDN_URLS) {
-    if (window.faceapi) { libLoaded = true; break; }
+  for (const cdn of CDN) {
+    if (window.faceapi) { libLoaded=true; break; }
     try {
-      await new Promise((resolve, reject) => {
-        const s = document.createElement('script');
-        s.src = cdn.js;
-        s.onload = resolve; s.onerror = reject;
+      await new Promise((res,rej)=>{
+        const s=document.createElement('script');
+        s.src=cdn.js; s.onload=res; s.onerror=rej;
         document.head.appendChild(s);
-        setTimeout(reject, 15000);
+        setTimeout(rej,15000);
       });
-      libLoaded = true; break;
-    } catch(e) { continue; }
+      libLoaded=true; break;
+    } catch(e) {}
   }
-  
-  if (!libLoaded) {
-    setStatus('err','❌ Failed to load face library. Refresh page.');
-    return;
-  }
-  setProgress(30);
+  if (!libLoaded) { setStatus('err','❌ Model failed'); return; }
 
-  // Load weights
-  for (const cdn of CDN_URLS) {
+  for (const cdn of CDN) {
     try {
-      setStatus('loading','⏳ Loading face detector...');
-      setProgress(45);
-      await faceapi.nets.tinyFaceDetector.loadFromUri(cdn.weights);
-      setStatus('loading','⏳ Loading face landmarks...');
-      setProgress(65);
-      await faceapi.nets.faceLandmark68Net.loadFromUri(cdn.weights);
-      setStatus('loading','⏳ Loading recognition model...');
-      setProgress(85);
-      await faceapi.nets.faceRecognitionNet.loadFromUri(cdn.weights);
+      // Load SSD MobileNet (more accurate) + Landmarks + Recognition
+      await faceapi.nets.ssdMobilenetv1.loadFromUri(cdn.w);
+      await faceapi.nets.faceLandmark68Net.loadFromUri(cdn.w);
+      await faceapi.nets.faceRecognitionNet.loadFromUri(cdn.w);
       faceApiLoaded = true;
-      setProgress(100);
-      setStatus('ok','✅ Face recognition ready! You can now capture face.');
+      setStatus('ok','✅ Ready! Capture 3 face samples (different angles)');
       document.getElementById('btnCapture').disabled = false;
-      document.getElementById('btnCapture').textContent = '📸 Capture Face';
+      document.getElementById('btnCapture').textContent = '📸 Capture Sample 1';
       document.getElementById('cameraWrap').classList.add('ready');
       return;
-    } catch(e) {
-      setStatus('loading','⏳ Trying alternate source...');
-      continue;
-    }
+    } catch(e) { continue; }
   }
-  
-  setStatus('err','❌ Face model failed to load. Check internet and refresh.');
+  setStatus('err','❌ Model download failed');
 }
+loadFaceApiRobust();
 
-function handleCapture() {
-  if(capturedPhoto) { retake(); return; }
-  if(!faceApiLoaded) { alert('Face model still loading. Please wait.'); return; }
-  capturePhoto();
-}
+async function captureSample() {
+  if (!faceApiLoaded) return;
+  if (faceDescriptors.length >= 3) return;
 
-async function capturePhoto() {
-  const video=document.getElementById('video');
-  if (!video.videoWidth) { alert('Camera not ready. Please wait.'); return; }
-  
-  const canvas=document.createElement('canvas');
-  canvas.width=video.videoWidth; canvas.height=video.videoHeight;
-  canvas.getContext('2d').drawImage(video,0,0);
-  capturedPhoto=canvas.toDataURL('image/jpeg',0.85);
+  const video = document.getElementById('video');
+  if (!video.videoWidth) { alert('Camera not ready'); return; }
 
-  document.getElementById('previewImg').src=capturedPhoto;
-  document.getElementById('previewImg').style.display='block';
-  document.getElementById('cameraWrap').style.display='none';
-  document.getElementById('btnCapture').textContent='🔄 Retake';
+  const canvas = document.createElement('canvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
 
-  // Extract face descriptor
-  showLoading('Detecting face... (may take 5 sec)');
+  showLoading('Detecting face... (using SSD MobileNet)');
   try {
-    // Try with larger input size for better detection
-    let det = await faceapi.detectSingleFace(
-      canvas,
-      new faceapi.TinyFaceDetectorOptions({ inputSize: 512, scoreThreshold: 0.3 })
-    ).withFaceLandmarks().withFaceDescriptor();
-    
-    // If not found, try with different settings
-    if (!det) {
-      det = await faceapi.detectSingleFace(
-        canvas,
-        new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.2 })
-      ).withFaceLandmarks().withFaceDescriptor();
-    }
-    
-    // Last attempt - detect any face without threshold
-    if (!det) {
-      const allFaces = await faceapi.detectAllFaces(
-        canvas,
-        new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.1 })
-      ).withFaceLandmarks().withFaceDescriptors();
-      if (allFaces && allFaces.length > 0) det = allFaces[0];
-    }
-    
+    const det = await faceapi.detectSingleFace(canvas, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5 }))
+      .withFaceLandmarks().withFaceDescriptor();
     hideLoading();
-    if(det && det.descriptor && det.descriptor.length > 0) {
-      faceDescriptor = Array.from(det.descriptor);
-      setStatus('ok','✅ Face detected & saved! You can now Save Employee.');
-    } else {
-      faceDescriptor = null;
-      setStatus('err','❌ No face detected. Please improve lighting - face should be well-lit.');
-    }
-  } catch(e) { 
-    hideLoading(); 
-    faceDescriptor = null;
-    setStatus('err','❌ Face detection error: ' + e.message);
-  }
-  checkReady();
-}
 
-function retake() {
-  capturedPhoto=null; faceDescriptor=null;
-  document.getElementById('previewImg').style.display='none';
-  document.getElementById('cameraWrap').style.display='block';
-  document.getElementById('btnCapture').textContent='📸 Capture Face';
-  setStatus('ok','✅ Face recognition ready! Take a clear photo.');
-  startCamera(); 
-  checkReady();
+    if (!det || !det.descriptor) {
+      setStatus('err','❌ No face detected. Retake with better light.');
+      return;
+    }
+
+    faceDescriptors.push(Array.from(det.descriptor));
+    const idx = faceDescriptors.length;
+    const slot = document.getElementById('slot'+idx);
+    slot.classList.add('done');
+    const img = canvas.toDataURL('image/jpeg', 0.7);
+    slot.innerHTML = '<img src="'+img+'">';
+
+    if (faceDescriptors.length < 3) {
+      const nextIdx = faceDescriptors.length + 1;
+      const guides = ['face slightly left', 'face slightly right'];
+      setStatus('ok','✅ Sample '+idx+' saved. Now capture sample '+nextIdx+' — turn '+guides[idx-1]);
+      document.getElementById('btnCapture').textContent = '📸 Capture Sample ' + nextIdx;
+    } else {
+      // Average all 3 descriptors
+      const avg = new Array(faceDescriptors[0].length).fill(0);
+      for (const d of faceDescriptors) {
+        for (let i = 0; i < d.length; i++) avg[i] += d[i];
+      }
+      for (let i = 0; i < avg.length; i++) avg[i] /= faceDescriptors.length;
+      averagedDescriptor = avg;
+      setStatus('ok','✅ All 3 samples captured! Face profile ready.');
+      document.getElementById('btnCapture').textContent = '✅ Done';
+      document.getElementById('btnCapture').disabled = true;
+      checkReady();
+    }
+  } catch(e) {
+    hideLoading();
+    setStatus('err','❌ Detection error');
+  }
 }
 
 function checkReady() {
-  const id=document.getElementById('empId').value.trim();
-  const name=document.getElementById('name').value.trim();
-  const dept=document.getElementById('department').value;
-  const desig=document.getElementById('designation').value;
-  const type=document.getElementById('empType').value;
-  const hasFace = faceDescriptor && faceDescriptor.length > 0;
-  const ready = id && name && dept && desig && type && capturedPhoto && hasFace;
+  const id = document.getElementById('empId').value.trim();
+  const name = document.getElementById('name').value.trim();
+  const dept = document.getElementById('department').value;
+  const desig = document.getElementById('designation').value;
+  const type = document.getElementById('empType').value;
+  const ready = id && name && dept && desig && type && averagedDescriptor;
   document.getElementById('btnSave').disabled = !ready;
-  
-  if (capturedPhoto && !hasFace) {
-    document.getElementById('btnSave').textContent = '⚠️ Retake photo — face not detected';
-  } else if (ready) {
-    document.getElementById('btnSave').textContent = '💾 Save Employee & Generate Link';
-  } else {
-    document.getElementById('btnSave').textContent = '💾 Save Employee & Generate Link';
-  }
 }
 
 async function saveEmployee() {
-  if (!faceDescriptor || faceDescriptor.length === 0) {
-    alert('❌ Face data missing! Retake photo and wait for ✅ green tick.');
-    return;
-  }
-  
-  const empData={
-    empId:document.getElementById('empId').value.trim(),
-    name:document.getElementById('name').value.trim(),
-    department:document.getElementById('department').value,
-    designation:document.getElementById('designation').value,
-    phone:document.getElementById('phone').value.trim(),
-    type:document.getElementById('empType').value,
-    shiftStart:document.getElementById('shiftStart').value,
-    shiftEnd:document.getElementById('shiftEnd').value,
-    status:document.getElementById('status').value,
-    faceDescriptor:faceDescriptor,
+  if (!averagedDescriptor) { alert('Please capture 3 face samples first'); return; }
+  const empData = {
+    action: 'register',
+    empId: document.getElementById('empId').value.trim(),
+    name: document.getElementById('name').value.trim(),
+    department: document.getElementById('department').value,
+    designation: document.getElementById('designation').value,
+    phone: document.getElementById('phone').value.trim(),
+    type: document.getElementById('empType').value,
+    shiftStart: document.getElementById('shiftStart').value,
+    shiftEnd: document.getElementById('shiftEnd').value,
+    status: document.getElementById('status').value,
+    faceDescriptor: averagedDescriptor,
     githubPagesUrl: GITHUB_PAGES_URL
   };
-  
-  showLoading('Saving employee & generating link...');
+  showLoading('Saving...');
   if(stream) stream.getTracks().forEach(t=>t.stop());
-  
   try {
-    const payload = encodeURIComponent(JSON.stringify({action:'register',...empData}));
-    const url = APPS_SCRIPT_URL + '?action=register&data=' + payload;
-    const res = await fetch(url);
+    const payload = encodeURIComponent(JSON.stringify(empData));
+    const res = await fetch(APPS_SCRIPT_URL + '?action=register&data=' + payload);
     const text = await res.text();
-    let data;
-    try { data = JSON.parse(text); }
-    catch(pe) { throw new Error('Invalid response: ' + text.substring(0,100)); }
+    let data; try { data = JSON.parse(text); } catch(e) { throw new Error(text.substring(0,80)); }
     hideLoading();
-    if(data.success) {
-      _link=data.personalLink; _empName=data.name; _empPhone=data.phone;
+    if (data.success) {
+      _link = data.personalLink; _empName = data.name; _empPhone = data.phone;
       document.getElementById('formCard').style.display='none';
       document.getElementById('btnSave').style.display='none';
       document.getElementById('linkCard').style.display='block';
-      document.getElementById('linkSub').textContent=data.name+' ('+data.empId+') — share this link';
-      document.getElementById('linkBox').textContent=data.personalLink;
-    } else { 
-      alert('❌ '+(data.message||'Unknown error')); 
-    }
-  } catch(e) { 
-    hideLoading(); 
-    alert('❌ Error: '+e.message); 
-  }
+      document.getElementById('linkSub').textContent = data.name+' ('+data.empId+') — strong recognition ready';
+      document.getElementById('linkBox').textContent = data.personalLink;
+    } else alert('❌ '+data.message);
+  } catch(e) { hideLoading(); alert('❌ '+e.message); }
 }
 
 function shareWhatsApp() {
-  const msg=encodeURIComponent('Hi '+_empName+',\n\nYour Colrina Attendance link:\n'+_link+'\n\nOpen this link daily to mark attendance.\n\n— Colrina HR');
-  const phone=_empPhone?(_empPhone.length===10?'91'+_empPhone:_empPhone):'';
+  const msg = encodeURIComponent('Hi '+_empName+',\n\nYour Colrina Attendance link:\n'+_link);
+  const phone = _empPhone ? (_empPhone.length===10?'91'+_empPhone:_empPhone) : '';
   window.open(phone?'https://wa.me/'+phone+'?text='+msg:'https://wa.me/?text='+msg,'_blank');
 }
-
 function copyLink() {
   navigator.clipboard.writeText(_link).then(()=>{
     const b=document.querySelector('.btn-copy'); b.textContent='✅ Copied!';
     setTimeout(()=>b.textContent='📋 Copy Link',2000);
   });
 }
-
-function setStatus(type, text) {
-  const box = document.getElementById('statusBox');
-  box.className = 'status-box status-' + type;
-  box.innerHTML = text + (type==='loading' ? '<div class="progress-wrap"><div class="progress-bar" id="progressBar" style="width:'+(document.getElementById('progressBar')?.style.width||'0%')+'"></div></div>' : '');
-}
-function setProgress(pct) {
-  const bar = document.getElementById('progressBar');
-  if (bar) bar.style.width = pct + '%';
+function setStatus(t,txt) {
+  const b=document.getElementById('statusBox');
+  b.className='status-box status-'+t; b.textContent=txt;
 }
 function showLoading(t){document.getElementById('loadingText').textContent=t;document.getElementById('loadingOverlay').classList.add('show')}
 function hideLoading(){document.getElementById('loadingOverlay').classList.remove('show')}
-
-// Start everything
-startCamera();
-loadFaceApiRobust();
 </script>
 </body>
 </html>
