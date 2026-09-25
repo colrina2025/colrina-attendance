@@ -296,7 +296,7 @@ async function loadFaceApi() {
     const wUrl = WEIGHTS_URLS[wi];
     try {
       setProgress(40, 'Loading face detector... (source ' + (wi+1) + ')');
-      await faceapi.nets.ssdMobilenetv1.loadFromUri(wUrl);
+      await faceapi.nets.tinyFaceDetector.loadFromUri(wUrl);
       setProgress(60, 'Loading face landmarks...');
       await faceapi.nets.faceLandmark68Net.loadFromUri(wUrl);
       setProgress(80, 'Loading recognition model...');
@@ -354,7 +354,7 @@ function startAutoScan() {
     canvas.getContext('2d').drawImage(video, 0, 0);
 
     try {
-      const det = await faceapi.detectSingleFace(canvas, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5 }))
+      const det = await faceapi.detectSingleFace(canvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.4 }))
         .withFaceLandmarks().withFaceDescriptor();
 
       if (!det) {
