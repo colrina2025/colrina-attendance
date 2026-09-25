@@ -195,7 +195,7 @@ async function loadFaceApiRobust() {
   for (const cdn of CDN) {
     try {
       // Load SSD MobileNet (more accurate) + Landmarks + Recognition
-      await faceapi.nets.ssdMobilenetv1.loadFromUri(cdn.w);
+      await faceapi.nets.tinyFaceDetector.loadFromUri(cdn.w);
       await faceapi.nets.faceLandmark68Net.loadFromUri(cdn.w);
       await faceapi.nets.faceRecognitionNet.loadFromUri(cdn.w);
       faceApiLoaded = true;
@@ -222,9 +222,9 @@ async function captureSample() {
   canvas.height = video.videoHeight;
   canvas.getContext('2d').drawImage(video, 0, 0);
 
-  showLoading('Detecting face... (using SSD MobileNet)');
+  showLoading('Detecting face... (high accuracy mode)');
   try {
-    const det = await faceapi.detectSingleFace(canvas, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5 }))
+    const det = await faceapi.detectSingleFace(canvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.3 }))
       .withFaceLandmarks().withFaceDescriptor();
     hideLoading();
 
