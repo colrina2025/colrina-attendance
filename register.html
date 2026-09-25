@@ -173,8 +173,9 @@ startCamera();
 
 async function loadFaceApiRobust() {
   const CDN = [
-    { js:'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js', w:'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights' },
-    { js:'https://unpkg.com/face-api.js@0.22.2/dist/face-api.min.js', w:'https://unpkg.com/face-api.js@0.22.2/weights' }
+    { js:'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.13/dist/face-api.min.js', w:'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.13/model' },
+    { js:'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/dist/face-api.min.js', w:'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights' },
+    { js:'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js', w:'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights' }
   ];
   setStatus('loading','⏳ Loading face model...');
   let libLoaded = false;
