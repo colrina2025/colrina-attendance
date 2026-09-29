@@ -135,7 +135,15 @@
 <div class="container" id="mainContent" style="display:none">
 
   <!-- Camera Section -->
-  <div id="sectionCamera">
+  <div id="sectionAction">
+    <div class="card" style="text-align:center;padding:40px 24px">
+      <div style="font-size:15px;color:var(--muted);margin-bottom:24px">Select action to mark attendance</div>
+      <button onclick="startFlow('IN')" style="width:100%;padding:20px;border-radius:12px;border:none;background:linear-gradient(135deg,#00d4aa,#00a884);color:#000;font-family:Inter,sans-serif;font-size:18px;font-weight:700;cursor:pointer;margin-bottom:12px">✅ Check IN</button>
+      <button onclick="startFlow('OUT')" style="width:100%;padding:20px;border-radius:12px;border:none;background:linear-gradient(135deg,#e94560,#c0392b);color:#fff;font-family:Inter,sans-serif;font-size:18px;font-weight:700;cursor:pointer">👋 Check OUT</button>
+    </div>
+  </div>
+
+  <div id="sectionCamera" style="display:none">
     <div class="camera-wrap" id="cameraWrap">
       <video id="video" autoplay playsinline muted></video>
       <div class="scan-overlay">
@@ -210,12 +218,8 @@ window.onload = async function() {
     empData = emp;
     showEmpCard();
     document.getElementById('mainContent').style.display = 'block';
-    // Start everything in parallel
-    startCamera();
-    getGPS();
+    // Load face API in background but wait for user to click IN/OUT
     await loadFaceApi();
-    // Once face API loaded — start auto scanning
-    startAutoScan();
   } catch(e) {
     hideLoading();
     showInvalid();
@@ -328,6 +332,17 @@ async function loadFaceApi() {
 }
 
 // ── Auto Face Scanning ────────────────────────────────────────
+let selectedAction = null;
+
+function startFlow(action) {
+  selectedAction = action;
+  document.getElementById('sectionAction').style.display = 'none';
+  document.getElementById('sectionCamera').style.display = 'block';
+  startCamera();
+  getGPS();
+  startAutoScan();
+}
+
 function startAutoScan() {
   if (scanning || punchSubmitted) return;
   scanning = true;
@@ -430,6 +445,7 @@ async function submitPunch(canvas) {
       action:    'punch',
       empId:     empData.empId,
       token:     TOKEN,
+      punchType: selectedAction,
       lat:       gpsData.lat   || 0,
       lng:       gpsData.lng   || 0,
       faceMatch: empData._faceMatch || '0%',
@@ -482,8 +498,10 @@ function resetForNextPunch() {
   punchSubmitted = false;
   scanning       = false;
   gpsData        = { lat: null, lng: null, ok: false };
+  selectedAction = null;
 
-  document.getElementById('sectionCamera').style.display = 'block';
+  document.getElementById('sectionAction').style.display = 'block';
+  document.getElementById('sectionCamera').style.display = 'none';
   document.getElementById('sectionResult').style.display = 'none';
   document.getElementById('cameraWrap').className = 'camera-wrap';
   document.getElementById('btnRetry').style.display = 'none';
