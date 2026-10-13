@@ -65,6 +65,10 @@
 
   <div class="card" id="formCard">
     <div class="card-title">Employee Details</div>
+    <div class="form-group">
+      <label>Company *</label>
+      <select id="company" onchange="checkReady()"><option value="">Loading companies...</option></select>
+    </div>
     <div class="row">
       <div class="form-group"><label>Emp Code *</label><input type="text" id="empId" placeholder="e.g. COL001" oninput="checkReady()"></div>
       <div class="form-group"><label>Phone</label><input type="tel" id="phone" placeholder="10 digits"></div>
@@ -135,6 +139,21 @@ let faceDescriptors = []; // array of 3 sample descriptors
 let averagedDescriptor = null;
 let faceApiLoaded = false, stream = null;
 let _link='', _empName='', _empPhone='';
+
+async function loadCompanies() {
+  try {
+    const res = await fetch(APPS_SCRIPT_URL + '?action=companies');
+    const list = await res.json();
+    const sel = document.getElementById('company');
+    sel.innerHTML = '<option value="">Select...</option>';
+    list.forEach(c => {
+      const o = document.createElement('option');
+      o.value = c; o.textContent = c;
+      sel.appendChild(o);
+    });
+  } catch(e) {}
+}
+loadCompanies();
 
 async function loadDepartments() {
   try {
@@ -268,10 +287,11 @@ async function captureSample() {
 function checkReady() {
   const id = document.getElementById('empId').value.trim();
   const name = document.getElementById('name').value.trim();
+  const company = document.getElementById('company').value;
   const dept = document.getElementById('department').value;
   const desig = document.getElementById('designation').value;
   const type = document.getElementById('empType').value;
-  const ready = id && name && dept && desig && type && averagedDescriptor;
+  const ready = id && name && company && dept && desig && type && averagedDescriptor;
   document.getElementById('btnSave').disabled = !ready;
 }
 
@@ -281,6 +301,7 @@ async function saveEmployee() {
     action: 'register',
     empId: document.getElementById('empId').value.trim(),
     name: document.getElementById('name').value.trim(),
+    company: document.getElementById('company').value,
     department: document.getElementById('department').value,
     designation: document.getElementById('designation').value,
     phone: document.getElementById('phone').value.trim(),
