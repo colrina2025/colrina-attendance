@@ -24,6 +24,8 @@
 
   /* Dashboard */
   .container{max-width:1400px;margin:0 auto;padding:24px}
+  .tab-btn{background:transparent;border:none;color:var(--muted);padding:10px 20px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:14px;font-weight:600;transition:all 0.2s}
+  .tab-btn.active{background:var(--accent);color:#fff}
   .filters{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}
   .filter-item{flex:1;min-width:160px}
   .filter-item label{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
@@ -91,6 +93,13 @@
   </div>
 
   <div class="container">
+    <div style="display:flex;gap:4px;margin-bottom:20px;background:var(--surface);padding:4px;border-radius:10px;width:fit-content">
+      <button id="tabDaily" class="tab-btn active" onclick="switchTab('daily')">📅 Daily View</button>
+      <button id="tabMonthly" class="tab-btn" onclick="switchTab('monthly')">📊 Monthly Summary</button>
+    </div>
+    
+    <!-- Daily Tab -->
+    <div id="dailyTab">
     <div class="filters">
       <div class="filter-item">
         <label>Date</label>
@@ -142,6 +151,63 @@
             <tr><td colspan="9" class="loading">Loading...</td></tr>
           </tbody>
         </table>
+      </div>
+    </div>
+    </div>
+
+    <!-- Monthly Tab -->
+    <div id="monthlyTab" style="display:none">
+      <div class="filters">
+        <div class="filter-item">
+          <label>Month</label>
+          <input type="month" id="filterMonth">
+        </div>
+        <div class="filter-item">
+          <label>Company</label>
+          <select id="mCompany"><option value="">All Companies</option></select>
+        </div>
+        <div class="filter-item">
+          <label>Department</label>
+          <select id="mDept"><option value="">All Departments</option></select>
+        </div>
+        <button class="refresh-btn" onclick="loadMonthly()">🔄 Load</button>
+      </div>
+
+      <div class="stats" id="monthStats">
+        <div class="stat-card stat-total"><div class="stat-label">Total Days</div><div class="stat-value" id="mTotal">-</div></div>
+        <div class="stat-card stat-present"><div class="stat-label">Holidays</div><div class="stat-value" id="mHoliday">-</div></div>
+        <div class="stat-card stat-half"><div class="stat-label">Sundays</div><div class="stat-value" id="mSunday">-</div></div>
+      </div>
+
+      <div class="table-wrap">
+        <div class="table-head">
+          <div class="table-title">Monthly Summary</div>
+          <div>
+            <input type="text" class="search-box" id="mSearch" placeholder="Search name..." oninput="renderMonthly()">
+            <button class="export-btn" onclick="exportMonthlyCSV()">📥 Export CSV</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Emp Code</th>
+                <th>Name</th>
+                <th>Company</th>
+                <th>Department</th>
+                <th>Total Days</th>
+                <th>Present</th>
+                <th>Absent</th>
+                <th>Leave</th>
+                <th>Holiday</th>
+                <th>Sunday</th>
+              </tr>
+            </thead>
+            <tbody id="mTbody">
+              <tr><td colspan="10" class="empty">Select month and click Load</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -256,6 +322,91 @@ function renderTable() {
     else if (r.status === 'Late') badge = 'badge-late';
     return '<tr><td>'+r.empCode+'</td><td><strong>'+r.name+'</strong></td><td>'+(r.company||'-')+'</td><td>'+r.dept+'</td><td>'+r.designation+'</td><td>'+r.inTime+'</td><td>'+r.outTime+'</td><td>'+r.hours+'</td><td><span class="badge '+badge+'">'+r.status+'</span></td></tr>';
   }).join('');
+}
+
+let monthRows = [];
+
+function switchTab(tab) {
+  if (tab === 'daily') {
+    document.getElementById('tabDaily').classList.add('active');
+    document.getElementById('tabMonthly').classList.remove('active');
+    document.getElementById('dailyTab').style.display = 'block';
+    document.getElementById('monthlyTab').style.display = 'none';
+  } else {
+    document.getElementById('tabMonthly').classList.add('active');
+    document.getElementById('tabDaily').classList.remove('active');
+    document.getElementById('monthlyTab').style.display = 'block';
+    document.getElementById('dailyTab').style.display = 'none';
+    // Set current month if empty
+    if (!document.getElementById('filterMonth').value) {
+      const now = new Date();
+      document.getElementById('filterMonth').value = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+    }
+    // Load company/dept into monthly filters too
+    const mc = document.getElementById('mCompany');
+    const md = document.getElementById('mDept');
+    if (mc.children.length <= 1) {
+      [...document.getElementById('filterCompany').children].forEach(o => mc.appendChild(o.cloneNode(true)));
+      [...document.getElementById('filterDept').children].forEach(o => md.appendChild(o.cloneNode(true)));
+    }
+  }
+}
+
+async function loadMonthly() {
+  const monthInput = document.getElementById('filterMonth').value;
+  if (!monthInput) { alert('Pick a month'); return; }
+  const [year, month] = monthInput.split('-');
+  const company = document.getElementById('mCompany').value;
+  const dept = document.getElementById('mDept').value;
+  
+  document.getElementById('mTbody').innerHTML = '<tr><td colspan="10" class="loading">Loading...</td></tr>';
+  try {
+    const url = APPS_SCRIPT_URL + '?action=monthlySummary&password=' + encodeURIComponent(hrPassword)
+                + '&month=' + month + '&year=' + year + '&company=' + encodeURIComponent(company) + '&dept=' + encodeURIComponent(dept);
+    const res = await fetch(url);
+    const data = await res.json();
+    if (!data.success) { alert(data.message); return; }
+    
+    document.getElementById('mTotal').textContent = data.totalDays;
+    document.getElementById('mHoliday').textContent = data.holidayCount;
+    document.getElementById('mSunday').textContent = data.sundayCount;
+    
+    monthRows = data.rows;
+    renderMonthly();
+  } catch(e) { alert('Error: '+e.message); }
+}
+
+function renderMonthly() {
+  const q = document.getElementById('mSearch').value.toLowerCase().trim();
+  const filtered = q ? monthRows.filter(r => r.name.toLowerCase().includes(q) || r.empCode.toLowerCase().includes(q)) : monthRows;
+  const tbody = document.getElementById('mTbody');
+  if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="10" class="empty">No records</td></tr>'; return; }
+  tbody.innerHTML = filtered.map(r => '<tr>'
+    + '<td>'+r.empCode+'</td>'
+    + '<td><strong>'+r.name+'</strong></td>'
+    + '<td>'+(r.company||'-')+'</td>'
+    + '<td>'+r.dept+'</td>'
+    + '<td>'+r.totalDays+'</td>'
+    + '<td style="color:var(--green);font-weight:600">'+r.present+'</td>'
+    + '<td style="color:var(--accent);font-weight:600">'+r.absent+'</td>'
+    + '<td style="color:var(--yellow)">'+r.leave+'</td>'
+    + '<td>'+r.holiday+'</td>'
+    + '<td>'+r.sunday+'</td>'
+    + '</tr>').join('');
+}
+
+function exportMonthlyCSV() {
+  if (!monthRows.length) { alert('No data'); return; }
+  const headers = ['Emp Code','Name','Company','Department','Total Days','Present','Absent','Leave','Holiday','Sunday'];
+  const rows = [headers.join(',')];
+  monthRows.forEach(r => {
+    rows.push([r.empCode,r.name,r.company||'',r.dept,r.totalDays,r.present,r.absent,r.leave,r.holiday,r.sunday].map(v => '"'+String(v).replace(/"/g,'""')+'"').join(','));
+  });
+  const blob = new Blob([rows.join('\n')], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'monthly_' + document.getElementById('filterMonth').value + '.csv';
+  a.click();
 }
 
 function exportCSV() {
