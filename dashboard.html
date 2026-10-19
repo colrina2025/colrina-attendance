@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HR Dashboard — Colrina</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{--bg:#0f0f1a;--surface:#1a1a2e;--surface2:#16213e;--accent:#e94560;--green:#00d4aa;--yellow:#ffd060;--blue:#4a90e2;--text:#f0f0f0;--muted:#888;--radius:14px}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+  .header{background:var(--surface);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ffffff10}
+  .logo{font-size:18px;font-weight:700;letter-spacing:1px}
+  .logo-sub{font-size:11px;color:var(--muted);letter-spacing:2px}
+  .logout{background:transparent;color:var(--muted);border:1px solid #ffffff15;padding:8px 14px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:13px}
+
+  /* Login */
+  .login-wrap{max-width:380px;margin:80px auto;padding:40px 32px;background:var(--surface);border-radius:16px;text-align:center}
+  .login-title{font-size:24px;font-weight:700;margin-bottom:8px}
+  .login-sub{font-size:13px;color:var(--muted);margin-bottom:24px}
+  .login-input{width:100%;background:var(--bg);border:1px solid #ffffff20;border-radius:10px;padding:14px;color:var(--text);font-size:15px;font-family:inherit;outline:none;margin-bottom:12px}
+  .login-input:focus{border-color:var(--accent)}
+  .login-btn{width:100%;padding:14px;border:none;border-radius:10px;background:linear-gradient(135deg,#e94560,#c0392b);color:#fff;font-weight:700;font-size:15px;cursor:pointer}
+
+  /* Dashboard */
+  .container{max-width:1400px;margin:0 auto;padding:24px}
+  .filters{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+  .filter-item{flex:1;min-width:160px}
+  .filter-item label{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+  .filter-item input,.filter-item select{width:100%;background:var(--surface);border:1px solid #ffffff15;border-radius:8px;padding:10px 12px;color:var(--text);font-family:inherit;font-size:14px;outline:none}
+  .refresh-btn{background:var(--accent);color:#fff;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:600;font-family:inherit;align-self:flex-end}
+  
+  /* Stats grid */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px}
+  .stat-card{background:var(--surface);border-radius:var(--radius);padding:20px;border:1px solid #ffffff08}
+  .stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px}
+  .stat-value{font-size:36px;font-weight:700;margin-top:6px}
+  .stat-total .stat-value{color:var(--text)}
+  .stat-present .stat-value{color:var(--green)}
+  .stat-absent .stat-value{color:var(--accent)}
+  .stat-late .stat-value{color:var(--yellow)}
+  .stat-half .stat-value{color:var(--blue)}
+
+  /* Table */
+  .table-wrap{background:var(--surface);border-radius:var(--radius);overflow:hidden;border:1px solid #ffffff08}
+  .table-head{padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ffffff10}
+  .table-title{font-weight:600}
+  .search-box{background:var(--bg);border:1px solid #ffffff15;border-radius:8px;padding:8px 12px;color:var(--text);font-family:inherit;font-size:13px;outline:none;width:220px}
+  .export-btn{background:var(--green);color:#000;border:none;padding:8px 14px;border-radius:8px;cursor:pointer;font-weight:600;font-family:inherit;font-size:13px;margin-left:8px}
+  table{width:100%;border-collapse:collapse}
+  th{text-align:left;padding:12px 16px;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #ffffff10;background:var(--bg)}
+  td{padding:12px 16px;font-size:13px;border-bottom:1px solid #ffffff05}
+  tr:hover td{background:#ffffff04}
+  .badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600}
+  .badge-present{background:#00d4aa20;color:var(--green)}
+  .badge-absent{background:#e9456020;color:var(--accent)}
+  .badge-late{background:#ffd06020;color:var(--yellow)}
+  .empty{padding:40px;text-align:center;color:var(--muted)}
+  .loading{padding:40px;text-align:center;color:var(--muted)}
+
+  @media (max-width:600px){
+    .filters{flex-direction:column}
+    .filter-item{min-width:100%}
+    .search-box{width:140px}
+    .table-wrap{overflow-x:auto}
+    table{min-width:900px}
+  }
+</style>
+</head>
+<body>
+
+<!-- Login Section -->
+<div id="loginSection">
+  <div class="login-wrap">
+    <div style="font-size:40px;margin-bottom:12px">🔐</div>
+    <div class="login-title">HR Dashboard</div>
+    <div class="login-sub">Enter HR password to continue</div>
+    <input type="password" id="pwdInput" class="login-input" placeholder="Password" onkeypress="if(event.key==='Enter')login()">
+    <button class="login-btn" onclick="login()">Login</button>
+  </div>
+</div>
+
+<!-- Main Dashboard -->
+<div id="mainSection" style="display:none">
+  <div class="header">
+    <div>
+      <div class="logo">COLRINA</div>
+      <div class="logo-sub">HR Dashboard</div>
+    </div>
+    <button class="logout" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="container">
+    <div class="filters">
+      <div class="filter-item">
+        <label>Date</label>
+        <input type="date" id="filterDate">
+      </div>
+      <div class="filter-item">
+        <label>Company</label>
+        <select id="filterCompany"><option value="">All Companies</option></select>
+      </div>
+      <div class="filter-item">
+        <label>Department</label>
+        <select id="filterDept"><option value="">All Departments</option></select>
+      </div>
+      <button class="refresh-btn" onclick="loadDashboard()">🔄 Refresh</button>
+    </div>
+
+    <div class="stats" id="statsGrid">
+      <div class="stat-card stat-total"><div class="stat-label">Total</div><div class="stat-value" id="statTotal">-</div></div>
+      <div class="stat-card stat-present"><div class="stat-label">Present</div><div class="stat-value" id="statPresent">-</div></div>
+      <div class="stat-card stat-absent"><div class="stat-label">Absent</div><div class="stat-value" id="statAbsent">-</div></div>
+      <div class="stat-card stat-late"><div class="stat-label">Late</div><div class="stat-value" id="statLate">-</div></div>
+      <div class="stat-card stat-half"><div class="stat-label">Half Day</div><div class="stat-value" id="statHalf">-</div></div>
+    </div>
+
+    <div class="table-wrap">
+      <div class="table-head">
+        <div class="table-title">Attendance Details</div>
+        <div>
+          <input type="text" class="search-box" id="searchBox" placeholder="Search name..." oninput="renderTable()">
+          <button class="export-btn" onclick="exportCSV()">📥 Export CSV</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Emp Code</th>
+              <th>Name</th>
+              <th>Company</th>
+              <th>Department</th>
+              <th>Designation</th>
+              <th>Check In</th>
+              <th>Check Out</th>
+              <th>Hours</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="tbody">
+            <tr><td colspan="9" class="loading">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwk4R4cmf8quXYcd-f8fMJ-BNZAzax_9erfqNfoLlHIWVomFieup2L6aIFrgTXeVeUbbQ/exec";
+let hrPassword = '';
+let allRows = [];
+
+// Set today's date
+document.getElementById('filterDate').value = new Date().toISOString().split('T')[0];
+
+async function login() {
+  const pwd = document.getElementById('pwdInput').value.trim();
+  if (!pwd) return;
+  try {
+    const res = await fetch(APPS_SCRIPT_URL + '?action=dashLogin&password=' + encodeURIComponent(pwd));
+    const data = await res.json();
+    if (data.success) {
+      hrPassword = pwd;
+      sessionStorage.setItem('hrPwd', pwd);
+      document.getElementById('loginSection').style.display = 'none';
+      document.getElementById('mainSection').style.display = 'block';
+      loadCompanies();
+      loadDepartments();
+      loadDashboard();
+    } else {
+      alert('❌ Wrong password');
+    }
+  } catch(e) { alert('Error: '+e.message); }
+}
+
+function logout() {
+  sessionStorage.removeItem('hrPwd');
+  hrPassword = '';
+  document.getElementById('loginSection').style.display = 'block';
+  document.getElementById('mainSection').style.display = 'none';
+  document.getElementById('pwdInput').value = '';
+}
+
+// Auto-login if saved
+if (sessionStorage.getItem('hrPwd')) {
+  hrPassword = sessionStorage.getItem('hrPwd');
+  document.getElementById('loginSection').style.display = 'none';
+  document.getElementById('mainSection').style.display = 'block';
+  loadCompanies();
+  loadDepartments();
+  loadDashboard();
+}
+
+async function loadCompanies() {
+  try {
+    const res = await fetch(APPS_SCRIPT_URL + '?action=companies');
+    const list = await res.json();
+    const sel = document.getElementById('filterCompany');
+    sel.innerHTML = '<option value="">All Companies</option>';
+    list.forEach(c => sel.innerHTML += '<option>'+c+'</option>');
+  } catch(e) {}
+}
+
+async function loadDepartments() {
+  try {
+    const res = await fetch(APPS_SCRIPT_URL + '?action=deptList');
+    const list = await res.json();
+    const sel = document.getElementById('filterDept');
+    sel.innerHTML = '<option value="">All Departments</option>';
+    list.forEach(d => sel.innerHTML += '<option>'+d+'</option>');
+  } catch(e) {}
+}
+
+async function loadDashboard() {
+  const dateInput = document.getElementById('filterDate').value;
+  const d = new Date(dateInput);
+  const dateStr = String(d.getDate()).padStart(2,'0') + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + d.getFullYear();
+  const company = document.getElementById('filterCompany').value;
+  const dept = document.getElementById('filterDept').value;
+
+  document.getElementById('tbody').innerHTML = '<tr><td colspan="9" class="loading">Loading...</td></tr>';
+
+  try {
+    const url = APPS_SCRIPT_URL + '?action=dashData&password=' + encodeURIComponent(hrPassword) 
+                + '&date=' + dateStr + '&company=' + encodeURIComponent(company) + '&dept=' + encodeURIComponent(dept);
+    const res = await fetch(url);
+    const data = await res.json();
+    if (!data.success) { alert(data.message); return; }
+
+    document.getElementById('statTotal').textContent = data.stats.total;
+    document.getElementById('statPresent').textContent = data.stats.present;
+    document.getElementById('statAbsent').textContent = data.stats.absent;
+    document.getElementById('statLate').textContent = data.stats.late;
+    document.getElementById('statHalf').textContent = data.stats.halfDay;
+
+    allRows = data.rows;
+    renderTable();
+  } catch(e) { alert('Error: '+e.message); }
+}
+
+function renderTable() {
+  const q = document.getElementById('searchBox').value.toLowerCase().trim();
+  const filtered = q ? allRows.filter(r => r.name.toLowerCase().includes(q) || (r.empCode||'').toLowerCase().includes(q)) : allRows;
+  
+  const tbody = document.getElementById('tbody');
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" class="empty">No records found</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = filtered.map(r => {
+    let badge = 'badge-absent';
+    if (r.status === 'Present') badge = 'badge-present';
+    else if (r.status === 'Late') badge = 'badge-late';
+    return '<tr><td>'+r.empCode+'</td><td><strong>'+r.name+'</strong></td><td>'+(r.company||'-')+'</td><td>'+r.dept+'</td><td>'+r.designation+'</td><td>'+r.inTime+'</td><td>'+r.outTime+'</td><td>'+r.hours+'</td><td><span class="badge '+badge+'">'+r.status+'</span></td></tr>';
+  }).join('');
+}
+
+function exportCSV() {
+  if (!allRows.length) { alert('No data to export'); return; }
+  const headers = ['Emp Code','Name','Company','Department','Designation','Check In','Check Out','Hours','Status'];
+  const rows = [headers.join(',')];
+  allRows.forEach(r => {
+    rows.push([r.empCode, r.name, r.company||'', r.dept, r.designation, r.inTime, r.outTime, r.hours, r.status].map(v => '"'+String(v).replace(/"/g,'""')+'"').join(','));
+  });
+  const csv = rows.join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'attendance_' + document.getElementById('filterDate').value + '.csv';
+  a.click();
+}
+</script>
+</body>
+</html>
