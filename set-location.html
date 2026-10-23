@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Set Office Location — Colrina</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+body{background:#0f0f1a;color:#f0f0f0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{background:#1a1a2e;border-radius:16px;padding:30px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.5)}
+h1{font-size:22px;margin-bottom:8px}
+.sub{color:#888;font-size:13px;margin-bottom:24px}
+label{display:block;font-size:12px;color:#aaa;margin-bottom:6px;margin-top:14px;letter-spacing:1px}
+input{width:100%;padding:12px;background:#0f0f1a;border:1px solid #ffffff20;border-radius:8px;color:#fff;font-size:15px}
+button{width:100%;padding:14px;border:none;border-radius:10px;background:linear-gradient(135deg,#e94560,#c0392b);color:#fff;font-size:15px;font-weight:600;cursor:pointer;margin-top:20px}
+button:disabled{opacity:0.5}
+button.secondary{background:#2563eb;margin-top:10px}
+.status{margin-top:16px;padding:12px;border-radius:8px;font-size:14px;text-align:center;display:none}
+.status.ok{background:#10b98130;color:#10b981;display:block}
+.status.err{background:#ef444430;color:#ef4444;display:block}
+.status.wait{background:#3b82f630;color:#3b82f6;display:block}
+.coords{background:#0f0f1a;padding:12px;border-radius:8px;margin-top:14px;font-family:monospace;font-size:13px;display:none}
+.coords.show{display:block}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>📍 Set Office Location</h1>
+  <div class="sub">Stand inside your office, then capture GPS</div>
+
+  <label>HR PASSWORD</label>
+  <input type="password" id="pwd" placeholder="colrina2024">
+
+  <button id="getBtn" onclick="getLocation()">📡 Capture My Current Location</button>
+
+  <div class="coords" id="coords"></div>
+  <div class="status" id="status"></div>
+
+  <button class="secondary" id="saveBtn" onclick="saveLocation()" style="display:none">💾 Save as Office Location</button>
+</div>
+
+<script>
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwk4R4cmf8quXYcd-f8fMJ-BNZAzax_9erfqNfoLlHIWVomFieup2L6aIFrgTXeVeUbbQ/exec";
+let currentLat = null, currentLng = null;
+
+function showStatus(msg, type){
+  const s = document.getElementById('status');
+  s.className = 'status ' + type;
+  s.textContent = msg;
+}
+
+function getLocation(){
+  if (!navigator.geolocation){
+    showStatus('GPS not supported on this browser', 'err');
+    return;
+  }
+  showStatus('⏳ Getting location... (allow permission if asked)', 'wait');
+  document.getElementById('getBtn').disabled = true;
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      currentLat = pos.coords.latitude;
+      currentLng = pos.coords.longitude;
+      const acc = Math.round(pos.coords.accuracy);
+      document.getElementById('coords').classList.add('show');
+      document.getElementById('coords').innerHTML =
+        '<b>Latitude:</b> ' + currentLat.toFixed(6) + '<br>' +
+        '<b>Longitude:</b> ' + currentLng.toFixed(6) + '<br>' +
+        '<b>Accuracy:</b> ±' + acc + 'm';
+      showStatus('✅ Location captured', 'ok');
+      document.getElementById('saveBtn').style.display = 'block';
+      document.getElementById('getBtn').disabled = false;
+    },
+    (err) => {
+      showStatus('❌ ' + err.message, 'err');
+      document.getElementById('getBtn').disabled = false;
+    },
+    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+  );
+}
+
+function saveLocation(){
+  const pwd = document.getElementById('pwd').value.trim();
+  if (!pwd){ showStatus('Enter HR password', 'err'); return; }
+  if (currentLat === null){ showStatus('Capture location first', 'err'); return; }
+
+  showStatus('⏳ Saving...', 'wait');
+  document.getElementById('saveBtn').disabled = true;
+
+  const url = APPS_SCRIPT_URL +
+    '?action=setOfficeLocation' +
+    '&lat=' + currentLat +
+    '&lng=' + currentLng +
+    '&password=' + encodeURIComponent(pwd);
+
+  fetch(url)
+    .then(r => r.json())
+    .then(res => {
+      if (res.success){
+        showStatus('✅ Office location saved! Employees can now punch from here.', 'ok');
+      } else {
+        showStatus('❌ ' + (res.message || 'Save failed'), 'err');
+      }
+      document.getElementById('saveBtn').disabled = false;
+    })
+    .catch(err => {
+      showStatus('❌ Network error: ' + err.message, 'err');
+      document.getElementById('saveBtn').disabled = false;
+    });
+}
+</script>
+</body>
+</html>
